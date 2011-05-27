@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# Image minimizer
+# Iteratively resamples image quality to a certain threshold, reducing image filesize but retaining quality similar to the original image
+#
+# Example usage:
+#	./imgmin.sh foo.jpg foo-min2.jpg	# default 2 pct
+#	./imgmin.sh foo.jpg foo-min1.jpg 1	# quality within 1 pct
+#	./imgmin.sh foo.jpg foo-min2.jpg 2	# quality within 2 pct
+#	./imgmin.sh foo.jpg foo-min3.jpg 3	# quality within 3 pct
+#	./imgmin.sh foo.jpg			# overwrite original, risky
+#
+# Author: Ryan Flynn <parseerror+imgmin@gmail.com>
+#
+# Requires:
+#  Imagemagick tools 'convert' and 'compare' http://www.imagemagick.org/
+#
+# References:
+#   1. "Optimization of JPEG (JPG) images: good quality and small size", Retrieved May 23 2011, http://www.ampsoft.net/webdesign-l/jpeg-compression.html
+#   2. "Convert, Edit, Or Compose Images From The Command-Line" In ImageMagick, Retrieved May 24 2011, http://www.imagemagick.org/script/command-line-tools.php
+#   3. "Bash Floating Point Comparison", http://unstableme.blogspot.com/2008/06/bash-float-comparison-bc.html
+
+if [ -z $1 ] || [ -z $2 ]; then
+	echo "Usage $0 <image> <dst> [quality]"
+	exit 1
+fi
+
+src=$1
+dst=$2
+cmpthreshold=${3:-2}
+
+if [ ! -f $src ]; then
+	echo "File $src does not exist"
+	exit 1
+fi
+
+ext=${src##*.}
+tmpfile=/tmp/imgmin$$.jpg
+
+qmin=0
+qmax=100
+# binary search for lowest quality where compare < $cmpthreshold
+while [ $qmax -gt $((qmin+1)) ]
+do
+	q=$(((qmax+qmin)/2))
+	convert -quality $q -interlace Line -strip $src $tmpfile
+	cmppct=`compare -metric RMSE $src $tmpfile /dev/null 2>&1 | cut -d '(' -f2 | cut -d ')' -f1`
+	cmppct=`echo $cmppct*100 | bc`
+	if [ `echo "$cmppct > $cmpthreshold" | bc` -eq 1 ]; then
+		qmin=$q
+	else
+		qmax=$q
+	fi
+	#printf "qmin=%u qmax=%u cmppct=%f\n" $qmin $qmax $cmppct
+done
+
+k0=$((`stat -c %s $src` / 1024))
+k1=$((`stat -c %s $tmpfile` / 1024))
+kdiff=$((($k0-$k1) * 100 / $k0))
+
+if [ $kdiff -gt 0 ]; then
+	mv $tmpfile $dst
+	echo "Before:${k0}KB After:${k1}KB Saved:$((k0-k1))KB($kdiff%)"
+else
+	cp $src $dst
+	echo "Couldn't minimize within $cmpthreshold, using original"
+fi
+
