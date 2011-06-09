@@ -32,7 +32,7 @@ def compare(src, dst):
 
 ComparePctMin = 0.1
 ComparePctMax = 10
-ComparePctThreshold = 2.0
+ComparePctThreshold = 1.0
 
 parser = OptionParser()
 parser.add_option("-m", "--max",
@@ -69,8 +69,8 @@ while qualmax > qualmin+1:
 		qualmin = qual
 	else:
 		qualmax = qual
-	#print '%.2f@%u' % (cmppct, qual),
-	#sys.stdout.flush()
+	print '%.2f@%u' % (cmppct, qual),
+	sys.stdout.flush()
 #print ''
 
 k0 = os.path.getsize(Src) / 1024.0

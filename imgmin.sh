@@ -27,7 +27,7 @@ fi
 
 src=$1
 dst=$2
-cmpthreshold=${3:-2}
+cmpthreshold=${3:-1}
 
 if [ ! -f $src ]; then
 	echo "File $src does not exist"
@@ -51,7 +51,7 @@ do
 	else
 		qmax=$q
 	fi
-	#printf "qmin=%u qmax=%u cmppct=%f\n" $qmin $qmax $cmppct
+	printf "%.2f@%u " $cmppct $q
 done
 
 k0=$((`stat -c %s $src` / 1024))
