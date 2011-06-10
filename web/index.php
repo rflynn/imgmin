@@ -57,7 +57,7 @@ $('#thumbs').html($('#thumbs').html() +
 '	<div id="row<?= $i ?>" class="row" style="display:table-row">' +
 '		<div style="display:table-cell; width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
 '		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border:1px solid #ccc">' +
-'			<?= $target_diff ?>%<br>' +
+'			<?= $target_diff ?><span style="color:#999;font-size:110%">σ</span><br>' +
 '			<div style="display:inline-block; margin-right:3px; width:<?= $pct ?>px; height:10px; background-image:url(static/img/progress-bar.png)"></div><?= $pct ?>%<br>' +
 '			Size: <?= round($res->bytes / 1024.0, 1) ?> Kb<br>' +
 '			Saved: <?= round($sizediff / 1024.0, 1) ?> Kb' +
