@@ -25,6 +25,9 @@ if [ -z $1 ] || [ -z $2 ]; then
 	exit 1
 fi
 
+# needed for webservers
+PATH=$PATH:/usr/local/bin:/usr/bin # FIXME: be smarter
+
 src=$1
 dst=$2
 cmpthreshold=${3:-1}
