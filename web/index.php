@@ -91,8 +91,9 @@ class Img
 	function thumbnail()
 	{
 		$thumbpath = $this->tmpdir . basename($this->path) . '.thumb.' . $this->ext;
-		exec(sprintf('convert -resize %dx%d %s %s',
-			$this->thumbpx, $this->thumbpx, escapeshellarg($this->path), escapeshellarg($thumbpath)));
+		if (!file_exists($thumbpath))
+			exec(sprintf('convert -resize %ux%u %s %s',
+				$this->thumbpx, $this->thumbpx, escapeshellarg($this->path), escapeshellarg($thumbpath)));
 		return $thumbpath;
 	}
 
