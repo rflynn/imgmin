@@ -181,16 +181,14 @@ $old = new Img($IMG);
 
 ?>
 
-<div style="display:table">
-	<div class="r">
+<div>
 <?php foreach (list_images($DIR) as $f) {
 	$img = new Img($f);
 ?>
-	<div class="c" style="margin:1px"><a href="<?= $PHP_SELF ?>?dir=<?= $DIR ?>&img=<?= $img->path ?>"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="margin-right:1px; border-width:1px"></a></div>
+	<div style="display:inline-block"><a href="<?= $PHP_SELF ?>?dir=<?= $DIR ?>&img=<?= $img->path ?>"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border-width:1px"></a></div>
 <?php }
 ob_flush();
 ?>
-	</div>
 </div>
 
 <div style="display:table">
