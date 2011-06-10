@@ -71,8 +71,8 @@ function displayThumb($orig)
 $('#thumbs').html($('#thumbs').html() +
 '<div style="display:table; width:280px; margin-bottom:1px">' +
 '	<div id="row<?= $i ?>" class="row" style="display:table-row">' +
-'		<div style="display:table-cell; width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
-'		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border:1px solid #ccc">' +
+'		<div class="c linkdiv" style="width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
+'		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border-top:1px solid #ccc">' +
 '			<b><?= $target_diff ?><span style="color:#999;font-size:110%">&sigma;</span></b><br>' +
 '			<div style="display:inline-block; margin-right:3px; width:<?= $pct ?>px; height:10px; background-image:url(static/img/progress-bar.png)"></div><?= $pct ?>%<br>' +
 '			Size: <?= round($res->bytes / 1024.0, 1) ?> Kb<br>' +
@@ -213,7 +213,7 @@ $IMG = @$_GET['img'] ? $_GET['img'] : list_images($DIR, 0);
 $old = new Img($IMG);
 ?>
 
-<h1>imgmin demo</h1>
+<h1>imgmin demo: configurable lossy compression</h1>
 
 <div style="display:table">
 <div class="r">
@@ -247,7 +247,7 @@ foreach ($classify as $c)
 	{
 ?>
 	<div class="c" style="vertical-align:top; width:<?= THUMBSIZE ?>px; padding:1px; border:1px solid #ccc; background-color:#eee">
-		<h3><?= $title ?></h3>
+		<h3><img src="static/img/folder.gif" style="vertical-align:text-top"> <?= $title ?></h3>
 <?php
 	foreach ($images as $f)
 	{
@@ -264,8 +264,8 @@ foreach ($classify as $c)
 <?php
 	}
 }
+ob_flush();
 ?>
-
 
 <div class="c">
 
@@ -274,17 +274,17 @@ foreach ($classify as $c)
 	</div>
 	<div class="r">
 		<div class="c" style="vertical-align:top; padding-left:10px">
-			<div class="c"><h3>Sample Gallery</h3></div>
+			<div class="c"><h3>Resample Gallery</h3></div>
 			<div id="thumbs"></div>
 		</div>
 		<div id="resampled" class="c" style="min-width:50%">
-			<div><h3>Resampled</h3></div>
+			<div style="position:absolute; padding:3px; z-index:2"><h3>Resampled</h3></div>
 			<div style="background-image:url(static/img/bg.png)" >
 				<img id="newoldbg" src="<?= htmlentities($old->path) ?>" style="position:absolute; z-index:0" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				<img id="newimg" src="" width="<?= $old->width ?>" height="<?= $old->height ?>" style="z-index:1">
 			</div>
 			<div>
-				<div><h3>Original</h3></div>
+				<div style="position:absolute; padding:3px"><h3>Original</h3></div>
 				<div style="background-image:url(static/img/bg.png)" >
 					<img id="oldimg" src="<?= htmlentities($old->path) ?>" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				</div>
@@ -304,12 +304,12 @@ function showThumb(a, path)
 	$('#newoldbg').show()
 	$('#newimg').hide()
 	$('#newimg').attr('src', path)
-	$('#newimg').fadeIn('slow', function()
+	$('#newimg').fadeIn('fast', function()
 	{
 		$('#newoldbg').hide()
 	})
 	$('.row').css('background-color', '#fff')
-	$('#' + a).css('background-color', '#eee')
+	$('#' + a).css('background-color', '#ff9')
 }
 
 
