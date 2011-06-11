@@ -257,7 +257,7 @@ foreach ($classify as $c)
 		if ($DIR != 'images')
 			$link .= 'dir='.urlencode($DIR);
 ?>
-		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a href="<?= $link ?>"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border-width:1px; padding:0px; margin:0px"></a></div>
+		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a href="<?= $link ?>"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border:1px solid #999; padding:0px; margin:0px"></a></div>
 <?php
 	}
 ?>
