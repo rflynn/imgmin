@@ -70,7 +70,7 @@ function displayThumb($orig)
 		$target_diff = @$m[1] ? $m[1] : '0';
 ?>
 $('#thumbs').html($('#thumbs').html() +
-'<div style="display:table; width:280px; margin-bottom:1px">' +
+'<div style="display:table; width:<?= THUMBSIZE+120 ?>px; margin-bottom:1px">' +
 '	<div id="row<?= $i ?>" class="row" style="display:table-row">' +
 '		<div class="c linkdiv" style="width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
 '		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border-top:1px solid #ccc">' +
