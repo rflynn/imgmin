@@ -303,7 +303,6 @@ ob_flush();
 
 function showThumb(a, path)
 {
-
 	$('#newoldbg').show()
 	$('#newimg').hide()
 	$('#newimg').attr('src', path)
@@ -314,7 +313,6 @@ function showThumb(a, path)
 	$('.row').css('background-color', '#fff')
 	$('#' + a).css('background-color', '#ff9')
 }
-
 
 $(document).ready(function() {
 
