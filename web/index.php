@@ -41,9 +41,10 @@ $('#spinner').show();
 define('THUMBSIZE', 100);
 define('TEMPDIR', './tmp/');
 define('TEMPABS', realpath('.') . '/' . TEMPDIR);
-define('IMGMINPATH', './');
-#define('IMAGEMAGICKPATH', '/home/rflynn/ImageMagick-6.7.0-6/utilities/');
-define('IMAGEMAGICKPATH', '/usr/local/bin/');
+define('IMGMINPATH', file_exists('./imgmin.sh') ? './' : '../');
+
+$which = `which convert`;
+define('IMAGEMAGICKPATH', substr($which, 0, strrpos($which, '/')+1));
 
 // check temp dir setup
 if (!file_exists(TEMPDIR))
