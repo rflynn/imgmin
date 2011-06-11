@@ -280,12 +280,14 @@ ob_flush();
 		</div>
 		<div id="resampled" class="c" style="min-width:50%">
 			<div style="position:absolute; padding:3px; z-index:2"><h3>Resampled</h3></div>
-			<div style="background-image:url(static/img/bg.png)" >
+			<div style="position:absolute; padding:4px; z-index:3; color:#fff"><h3>Resampled</h3></div>
+			<div style="background-image:url(static/img/bg.png)">
 				<img id="newoldbg" src="<?= htmlentities($old->path) ?>" style="position:absolute; z-index:0" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				<img id="newimg" src="" width="<?= $old->width ?>" height="<?= $old->height ?>" style="z-index:1">
 			</div>
 			<div>
 				<div style="position:absolute; padding:3px"><h3>Original</h3></div>
+				<div style="position:absolute; padding:4.5px; z-index:3; color:#fff"><h3>Original</h3></div>
 				<div style="background-image:url(static/img/bg.png)" >
 					<img id="oldimg" src="<?= htmlentities($old->path) ?>" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				</div>
