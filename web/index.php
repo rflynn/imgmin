@@ -8,11 +8,10 @@ body { font-family: arial; font-size:small }
 .dir { font-family: Courier New, sans-serif }
 code { color: green }
 h3 { margin: 0px; margin-bottom: 3px }
-#thumbs { width:280px }
 </style>
 </head>
 <body>
-<div id="spinner" style="background-color:#fff; position:absolute"><img src="static/img/spinner.gif"></div>
+<div id="spinner" style="padding:10px; background-color:#fff; position:absolute"><img src="static/img/spinner.gif"></div>
 <script language="javascript" src="static/js/jquery-1.6.1.js"></script>
 <script>
 jQuery.fn.center = function () {
@@ -23,6 +22,12 @@ jQuery.fn.center = function () {
 }
 $('#spinner').center();
 $('#spinner').show();
+
+function url(id)
+{
+	$('#spinner').show();
+	$(id).click();
+}
 </script>
 
 <?php
@@ -76,7 +81,7 @@ $('#thumbs').html($('#thumbs').html() +
 '	<div id="row<?= $i ?>" class="row" style="display:table-row">' +
 '		<div class="c linkdiv" style="width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
 '		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border-top:1px solid #ccc">' +
-'			<b><?= $target_diff ?><span style="color:#999;font-size:110%">&sigma;</span></b><br>' +
+'			<b><?= $target_diff ?><span style="color:#999;font-size:110%;font-family:times new roman">&sigma;</span></b><br>' +
 '			<div style="display:inline-block; margin-right:3px; width:<?= $pct ?>px; height:10px; background-image:url(static/img/progress-bar.png)"></div><?= $pct ?>%<br>' +
 '			Size: <?= round($res->bytes / 1024.0, 1) ?> Kb<br>' +
 '			Saved: <?= round($sizediff / 1024.0, 1) ?> Kb' +
@@ -114,7 +119,7 @@ $IMG = @$_GET['img'] ? $_GET['img'] : list_images($DIR, 0);
 $old = new Img($IMG);
 ?>
 
-<h1>imgmin demo: configurable lossy compression</h1>
+<h1>imgmin: smarter lossy compression</h1>
 
 <div style="display:table">
 <div class="r">
@@ -141,23 +146,25 @@ foreach ($li as $img)
 	}
 }
 
+$id = 0;
 foreach ($classify as $c)
 {
 	list($title, $size, $images) = $c;
 	if ($images)
 	{
 ?>
-	<div class="c" style="vertical-align:top; width:<?= THUMBSIZE ?>px; padding:1px; border:1px solid #ccc; background-color:#eee">
+	<div class="c" style="vertical-align:top; width:<?= THUMBSIZE ?>px; padding:1px">
 		<h3><img src="static/img/folder.gif" style="vertical-align:text-top"> <?= $title ?></h3>
 <?php
 	foreach ($images as $f)
 	{
+		$id++;
 		$img = new Img($f);
-		$link = $PHP_SELF . '?img=' . urlencode($img->path);
+		$link = $_SERVER['PHP_SELF'] . '?img=' . urlencode($img->path);
 		if ($DIR != 'images')
 			$link .= 'dir='.urlencode($DIR);
 ?>
-		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a href="<?= $link ?>"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border:1px solid #999; padding:0px; margin:0px"></a></div>
+		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a id="<?= $id ?>" href="<?= $link ?>" onclick="javacript:url('<?= $id ?>');"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border:<?= $img->path == $IMG ? '3px solid #ff9' : '1px solid #999' ?>; padding:0px; margin:0px"></a></div>
 <?php
 	}
 ?>
@@ -172,22 +179,18 @@ ob_flush();
 
 <div style="display:table">
 	<div class="r">
-	</div>
-	<div class="r">
 		<div class="c" style="vertical-align:top; padding-left:10px">
-			<div class="c"><h3>Resample Gallery</h3></div>
+			<h3>Resample Gallery</h3>
 			<div id="thumbs"></div>
 		</div>
-		<div id="resampled" class="c" style="min-width:50%">
-			<div style="position:absolute; padding:3px; z-index:2"><h3>Resampled</h3></div>
-			<div style="position:absolute; padding:4px; z-index:3; color:#fff"><h3>Resampled</h3></div>
+		<div id="resampled" class="c">
+			<div style="position:absolute; padding:3px; z-index:2"><h3 style="color:#fff; text-shadow: -1px -1px #333, 1px 1px #000">Resampled</h3></div>
 			<div style="background-image:url(static/img/bg.png)">
 				<img id="newoldbg" src="<?= htmlentities($old->path) ?>" style="position:absolute; z-index:0" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				<img id="newimg" src="" width="<?= $old->width ?>" height="<?= $old->height ?>" style="z-index:1">
 			</div>
 			<div>
-				<div style="position:absolute; padding:3px"><h3>Original</h3></div>
-				<div style="position:absolute; padding:4.5px; z-index:3; color:#fff"><h3>Original</h3></div>
+				<div style="position:absolute; padding:3px; z-index:2"><h3 style="color:#fff; text-shadow: -1px -1px #333, 1px 1px #000">Original</h3></div>
 				<div style="background-image:url(static/img/bg.png)" >
 					<img id="oldimg" src="<?= htmlentities($old->path) ?>" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				</div>
