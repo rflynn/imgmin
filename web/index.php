@@ -49,7 +49,10 @@ define('TEMPABS', realpath('.') . '/' . TEMPDIR);
 define('IMGMINPATH', file_exists('./imgmin.sh') ? './' : '../');
 
 $which = `which convert`;
-define('IMAGEMAGICKPATH', substr($which, 0, strrpos($which, '/')+1));
+if ($which)
+	define('IMAGEMAGICKPATH', substr($which, 0, strrpos($which, '/')+1));
+else
+	define('IMAGEMAGICKPATH', '/usr/local/bin/');
 
 // check temp dir setup
 if (!file_exists(TEMPDIR))
