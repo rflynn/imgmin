@@ -233,6 +233,20 @@ displayThumb($old);
 $('#spinner').hide();
 
 </script>
+</div>
+
+<h4>Compression Summary</h4>
+<ul>
+	<li>Smaller images &rArr; faster site &rArr; happier viewers &rArr; more pageviews &rArr; more ads sold &rArr; more money
+	<li>Allow lossy compression, but only within a specified quality threshold
+</ul>
+
+<h4>References</h4>
+<ul>
+	<li><a href="http://developer.yahoo.com/yslow/smushit/faq.html#faq_crushtool">Smush.it: What tools?</a>
+	<li><a href="http://developer.yahoo.com/performance/rules.html#opt_images">Yahoo! Best Practices: Optimize Images</a>
+</ul>
+
 </body>
 </html>
 
