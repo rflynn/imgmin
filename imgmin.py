@@ -20,7 +20,7 @@ from subprocess import Popen,PIPE
 from optparse import OptionParser
 
 def convert(quality, src, dst):
-	os.system('convert -quality %u -interlace Line -strip %s %s' % (
+	os.system('convert -quality %u -interlace none -strip %s %s' % (
 		quality, pipes.quote(src), pipes.quote(dst)))
 
 def compare(src, dst):
