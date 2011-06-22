@@ -4,11 +4,8 @@
 # Iteratively resamples image quality to a certain threshold, reducing image filesize but retaining quality similar to the original image
 #
 # Example usage:
-#	./imgmin.sh foo.jpg foo-min2.jpg	# default 2 pct
-#	./imgmin.sh foo.jpg foo-min1.jpg 1	# quality within 1 pct
-#	./imgmin.sh foo.jpg foo-min2.jpg 2	# quality within 2 pct
-#	./imgmin.sh foo.jpg foo-min3.jpg 3	# quality within 3 pct
-#	./imgmin.sh foo.jpg			# overwrite original, risky
+#	./imgmin.sh foo.jpg foo-min1.jpg	# default 1 standard deviation
+#	./imgmin.sh foo.jpg foo-min2.jpg 2	# quality within 2 standard deviation
 #
 # Author: Ryan Flynn <parseerror+imgmin@gmail.com>
 #
