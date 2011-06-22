@@ -10,7 +10,7 @@ http://imagemagick.org
 
 Problem
 
-Image can be compressed at different qualities. Often, resampling can remove
+Images can be compressed at different qualities. Often, resampling can remove
 data from an image (thus decreasing its size) without noticable visual effects.
 Many online images are inadequately compressed; they contain more data than is
 necessary. This results in larger images, higher load time latency and higher
