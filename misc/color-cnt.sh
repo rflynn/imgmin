@@ -4,7 +4,17 @@
 # photo-type images score ~1-20; gradient images score much higher, e.g. ~2500
 # we can use this to detect which images to skip
 
-for f in images/*.jpg;
+if [ $# -lt 1 ]; then
+	echo "Usage: $0 <image or folder>"
+	exit 1
+fi
+
+if [ ! -e $1 ]; then
+	echo "$1 does not exist"
+	exit 1
+fi
+
+for f in $@;
 do
 	cnt=`convert $f -format "%h*%w/%k" info:-`
 	density=`echo $cnt | bc -l`
