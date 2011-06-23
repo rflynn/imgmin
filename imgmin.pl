@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 #
+# Author: Ryan Flynn <parseerror+imgmin@gmail.com>
 # imgmin via Perl/PerlMagick
 # imgmin: https://github.com/rflynn/imgmin
 # PerlMagick: http://www.imagemagick.org/script/perl-magick.php
