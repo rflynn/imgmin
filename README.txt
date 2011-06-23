@@ -3,7 +3,7 @@ Summary
 
 Automated image optimization to save bandwidth, by way of a feedback loop.
 Can be incorporated into content workflows and deployment processes.
-Generally costs 2-3 seconds of runtime per image, depending on image size.
+Generally costs 1-3 seconds of runtime per image, depending on image size.
 Uses the excellent and widely available open source library ImageMagick
 http://imagemagick.org
 
@@ -54,7 +54,13 @@ Installation
 		sudo yum install imagemagick
 
 	Ubuntu Linux and Debian Linux:
+
 		sudo apt-get install imagemagick
+
+		and then the language-specific bindings if you want them:
+
+		sudo apt-get install perlmagick
+		sudo apt-get install python-pythonmagick
 
 
 Example use
