@@ -130,7 +130,6 @@ sub search_quality
 		}
 		printf " %.2f/%.2f@%u", $cmpstddev, $density_ratio, $q;
 	}
-	print "\n";
+	print  "\n";
 	return $tmp;
 }
-
