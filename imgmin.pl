@@ -21,12 +21,12 @@ use List::Util qw(max min);
 
 $|++;
 
-use constant CMP_THRESHOLD		=>    1.00;
-use constant COLOR_DENSITY_RATIO	=>    0.90; 
-use constant MIN_UNIQUE_COLORS		=> 4096; 
-use constant QUALITY_MAX  		=>  100; 
-use constant QUALITY_MIN  		=>   50; 
-use constant MAX_ITERATIONS		=>    6;
+use constant CMP_THRESHOLD		=>    1.00; # do not allow average pixel error to exceed this number of standard deviations
+use constant COLOR_DENSITY_RATIO	=>    0.90; # never reduce color count to less than this amount of the original
+use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer colors; they pixelate
+use constant QUALITY_MAX  		=>  100;    # maximum possible JPEG quality
+use constant QUALITY_MIN  		=>   50;    # minimum quality bound, never go below
+use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
 
 if ($#ARGV != 1)
 {
@@ -45,8 +45,9 @@ if (! -f $src)
 my $img = Image::Magick->new();
 $img->Read($src);
 
+printf "Before quality:%u colors:%u size:%.1fKB\n",
+	$img->Get('quality'), unique_colors($img), (-s $src) / 1024.;
 my $QUALITY_MAX = min($img->Get('quality'), QUALITY_MAX);
-printf "@%s", $QUALITY_MAX;
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
 my $tmp = search_quality($img, $dst);
@@ -57,9 +58,16 @@ $tmp->Write($dst);
 if (-s $dst > -s $src)
 {
 	copy($src, $dst) or die $!;
+	$tmp = $img->Clone();
 }
-print_stats();
 
+my $ks = (-s $src) / 1024.;
+my $kd = (-s $dst) / 1024.;
+my $ksave = $ks - $kd;
+my $kpct = $ksave * 100 / $ks;
+
+printf "After quality:%u colors:%u size:%.1fKB saved:(%.1fKB %.1f%%)\n",
+	$tmp->Get('quality'), unique_colors($tmp), $kd, $ksave, $kpct;
 exit;
 
 sub unique_colors
@@ -122,16 +130,6 @@ sub search_quality
 		}
 		printf " %.2f/%.2f@%u", $cmpstddev, $density_ratio, $q;
 	}
+	print  "\n";
 	return $tmp;
 }
-
-sub print_stats
-{
-	my $k0 = (-s $src) / 1024.;
-	my $k1 = (-s $dst) / 1024.;
-	my $ksave = $k0 - $k1;
-	my $kpct = $ksave * 100 / $k0;
-	printf "\nBefore:%.1fKB After:%.1fKB Saved:%.1fKB(%.1f%%)\n",
-		$k0, $k1, $ksave, $kpct;
-}
-
