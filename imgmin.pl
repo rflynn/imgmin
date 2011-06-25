@@ -53,6 +53,10 @@ my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
 my $tmp = search_quality($img, $dst);
+# "Chroma sub-sampling works because human vision is relatively insensitive to
+# small areas of colour. It gives a significant reduction in file sizes, with
+# little loss of perceived quality."
+$tmp->Set('sampling-factor' => '2x2');
 $tmp->Strip(); # strip an image of all profiles and comments
 $tmp->Write($dst);
 
