@@ -26,8 +26,8 @@ $|++;
 use constant CMP_THRESHOLD		=>    1.00; # do not allow average pixel error to exceed this number of standard deviations
 use constant COLOR_DENSITY_RATIO	=>    0.11; # never reduce color count to less than this amount of the original
 use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer colors; they pixelate
-use constant QUALITY_MAX  		=>  100;    # maximum possible JPEG quality
-use constant QUALITY_MIN  		=>   50;    # minimum quality bound, never go below
+use constant QUALITY_MAX  		=>   95;    # maximum reasonable JPEG quality
+use constant QUALITY_MIN  		=>   70;    # minimum quality bound, never go below
 use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
 
 printf "Image::Magick %s\n", $Image::Magick::VERSION;
