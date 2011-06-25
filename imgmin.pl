@@ -48,8 +48,8 @@ my $img = Image::Magick->new();
 $img->Read($src);
 
 printf "Before quality:%u colors:%u size:%.1fKB\n",
-	$img->Get('quality'), unique_colors($img), (-s $src) / 1024.;
-my $QUALITY_MAX = min($img->Get('quality'), QUALITY_MAX);
+	quality($img), unique_colors($img), (-s $src) / 1024.;
+my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
 my $tmp = search_quality($img, $dst);
@@ -69,14 +69,17 @@ my $ksave = $ks - $kd;
 my $kpct = $ksave * 100 / $ks;
 
 printf "After quality:%u colors:%u size:%.1fKB saved:(%.1fKB %.1f%%)\n",
-	$tmp->Get('quality'), unique_colors($tmp), $kd, $ksave, $kpct;
+	quality($tmp), unique_colors($tmp), $kd, $ksave, $kpct;
 exit;
+
+sub quality
+{
+	return $_[0]->Get('%Q')
+}
 
 sub unique_colors
 {
-	my ($img) = @_;
-	my $unique_colors = $img->Get('%k');
-	return $unique_colors;
+	return $_[0]->Get('%k')
 }
 
 sub color_density
