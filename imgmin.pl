@@ -22,7 +22,7 @@ use List::Util qw(max min);
 $|++;
 
 use constant CMP_THRESHOLD		=>    1.00; # do not allow average pixel error to exceed this number of standard deviations
-use constant COLOR_DENSITY_RATIO	=>    0.90; # never reduce color count to less than this amount of the original
+use constant COLOR_DENSITY_RATIO	=>    0.10; # never reduce color count to less than this amount of the original
 use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer colors; they pixelate
 use constant QUALITY_MAX  		=>  100;    # maximum possible JPEG quality
 use constant QUALITY_MIN  		=>   50;    # minimum quality bound, never go below
@@ -122,9 +122,9 @@ sub search_quality
 		$diff = $img->Compare(  image => $tmp,
 					metric => 'rmse');
 		$cmpstddev = $diff->Get('error') * 100;
-		my $density_ratio = color_density($tmp) / $original_density;
+		my $density_ratio = abs(color_density($tmp) - $original_density) / $original_density;
 		# divide search space in half; which half depending on whether this step passed or not
-		if ($cmpstddev > CMP_THRESHOLD || $density_ratio < COLOR_DENSITY_RATIO)
+		if ($cmpstddev > CMP_THRESHOLD || $density_ratio > COLOR_DENSITY_RATIO)
 		{
 			$qmin = $q;
 		} else {
