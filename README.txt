@@ -65,13 +65,17 @@ Installation
 
 Example use
 
-$ ./imgmin.sh examples/afghan-girl.jpg examples/afghan-girl-after.jpg
-1.06@50 0.64@75 0.91@62 1.00@56 1.02@53 1.01@54 1.01@55 Before:58KB After:34KB Saved:24KB(41%)
+$ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
+Before quality:85 colors:44958 size:58.8KB
+ 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
+After quality:71 colors:47836 size:38.4KB saved:(20.4KB 34.7%)
 
-$ time ./imgmin.sh examples/lena1.jpg examples/lena1-after.jpg
-2.11@50 1.65@75 1.11@87 0.40@93 0.64@90 0.95@88 Before:89KB After:73KB Saved:16KB(17%)
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after2.jpg
+Before quality:92 colors:69904 size:89.7KB
+ 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87 0.95/0.10@88
+After quality:88 colors:77190 size:68.4KB saved:(21.2KB 23.7%)
 
-real    0m1.889s
-user    0m0.916s
-sys     0m0.728s
+real    0m1.093s
+user    0m1.590s
+sys     0m0.090s
 
