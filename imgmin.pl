@@ -11,8 +11,10 @@
 # the goal of this program is to reduce image file size by reducing quality
 # while not visibly affecting image quality for casual use.
 #
-
-# TODO: consider incorporating: http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
+# References:
+#  1. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
+#  2. "Chroma Subsampling" http://en.wikipedia.org/wiki/Chroma_subsampling
+#  3. "Chroma sub-sampling" http://photo.net/learn/jpeg/#chrom
 
 use strict;
 use Image::Magick 6.7.0; # does not work with perlmagick 6.5.1, does with 6.7.0.8, not sure about in between
