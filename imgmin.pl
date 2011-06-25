@@ -15,7 +15,7 @@
 # TODO: consider incorporating: http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
 
 use strict;
-use Image::Magick;
+use Image::Magick 6.7.0; # does not work with perlmagick 6.5.1, does with 6.7.0.8, not sure about in between
 use File::Copy qw(copy);
 use List::Util qw(max min);
 
@@ -27,6 +27,8 @@ use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer
 use constant QUALITY_MAX  		=>  100;    # maximum possible JPEG quality
 use constant QUALITY_MIN  		=>   50;    # minimum quality bound, never go below
 use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
+
+printf "Image::Magick %s\n", $Image::Magick::VERSION;
 
 if ($#ARGV != 1)
 {
