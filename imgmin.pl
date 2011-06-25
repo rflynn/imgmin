@@ -22,11 +22,35 @@ use List::Util qw(max min);
 
 $|++;
 
-use constant CMP_THRESHOLD		=>    1.00; # do not allow average pixel error to exceed this number of standard deviations
-use constant COLOR_DENSITY_RATIO	=>    0.11; # never reduce color count to less than this amount of the original
-use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer colors; they pixelate
-use constant QUALITY_MAX  		=>   95;    # maximum reasonable JPEG quality
-use constant QUALITY_MIN  		=>   70;    # minimum quality bound, never go below
+# do not allow average pixel error to exceed this number of standard deviations
+use constant CMP_THRESHOLD		=>    1.00;
+
+# never reduce color count to less than this amount of the original
+use constant COLOR_DENSITY_RATIO	=>    0.11;
+
+# "JPEG is designed for compressing either full-color or gray-scale images
+# of natural, real-world scenes.  It works well on photographs, naturalistic
+# artwork, and similar material."[1]
+# JPEGs of full-color photographs will tend to have tens of thousands of colors,
+# and it is hard for a human to notice the difference when a few thousand have
+# changed; but low-color images, specifically smooth gradients, images with
+# text, etc. are much more susceptible to pixelation and degradation; use this
+# hueristic to avoid them.
+use constant MIN_UNIQUE_COLORS		=> 4096;
+
+# "Except for experimental purposes, never go above about Q 95; using Q 100
+# will produce a file two or three times as large as Q 95, but of hardly any
+# better quality."[1]
+use constant QUALITY_MAX  		=>   95;
+
+# "For good-quality, full-color source images, the default IJG quality setting
+# (Q 75) is very often the best choice."[1]
+# "If the image was less than perfect quality to begin with, you might be able
+# to drop down to Q 50 without objectionable degradation."[1]
+use constant QUALITY_MIN  		=>   70;
+
+# Ensure bounded worst-case performance in terms of iterations of intermediate
+# images
 use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
 
 printf "Image::Magick %s\n", $Image::Magick::VERSION;
