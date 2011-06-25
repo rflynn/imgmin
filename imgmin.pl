@@ -78,11 +78,15 @@ my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
 my $tmp = search_quality($img, $dst);
+
 # "Chroma sub-sampling works because human vision is relatively insensitive to
 # small areas of colour. It gives a significant reduction in file sizes, with
 # little loss of perceived quality." [2]
 $tmp->Set('sampling-factor' => '2x2');
-$tmp->Strip(); # strip an image of all profiles and comments
+
+# strip an image of all profiles and comments
+$tmp->Strip();
+
 $tmp->Write($dst);
 
 # never produce a larger image; if our results did, fall back to the original
@@ -99,6 +103,7 @@ my $kpct = $ksave * 100 / $ks;
 
 printf "After quality:%u colors:%u size:%.1fKB saved:(%.1fKB %.1f%%)\n",
 	quality($tmp), unique_colors($tmp), $kd, $ksave, $kpct;
+
 exit;
 
 sub quality
