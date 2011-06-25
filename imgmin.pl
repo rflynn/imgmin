@@ -103,14 +103,14 @@ the visual quality of the original
 sub search_quality
 {
 	my ($img, $dst) = @_;
-	my $tmp = $img->Clone();
 
-	if (unique_colors($tmp) < MIN_UNIQUE_COLORS)
+	if (unique_colors($img) < MIN_UNIQUE_COLORS)
 	{
-		return $tmp;
+		return $img;
 	}
 
 	my $original_density = color_density($img);
+	my $tmp = $img->Clone();
 	my $qmin = $QUALITY_MIN;
 	my $qmax = $QUALITY_MAX;
 
