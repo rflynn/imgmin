@@ -65,10 +65,10 @@ Installation
 
 Example use
 
-$ ./imgmin.sh examples/afghan-girl-before.jpg examples/afghan-girl-after.jpg 
+$ ./imgmin.sh examples/afghan-girl.jpg examples/afghan-girl-after.jpg
 1.06@50 0.64@75 0.91@62 1.00@56 1.02@53 1.01@54 1.01@55 Before:58KB After:34KB Saved:24KB(41%)
 
-$ time ./imgmin.sh examples/lena1-before.jpg examples/lena1-after.jpg 
+$ time ./imgmin.sh examples/lena1.jpg examples/lena1-after.jpg
 2.11@50 1.65@75 1.11@87 0.40@93 0.64@90 0.95@88 Before:89KB After:73KB Saved:16KB(17%)
 
 real    0m1.889s
