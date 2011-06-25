@@ -24,7 +24,7 @@ use List::Util qw(max min);
 $|++;
 
 use constant CMP_THRESHOLD		=>    1.00; # do not allow average pixel error to exceed this number of standard deviations
-use constant COLOR_DENSITY_RATIO	=>    0.10; # never reduce color count to less than this amount of the original
+use constant COLOR_DENSITY_RATIO	=>    0.11; # never reduce color count to less than this amount of the original
 use constant MIN_UNIQUE_COLORS		=> 4096;    # never compress an image with fewer colors; they pixelate
 use constant QUALITY_MAX  		=>  100;    # maximum possible JPEG quality
 use constant QUALITY_MIN  		=>   50;    # minimum quality bound, never go below
