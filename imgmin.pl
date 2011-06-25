@@ -3,18 +3,17 @@
 # Author: Ryan Flynn <parseerror+imgmin@gmail.com>
 # imgmin via Perl/PerlMagick
 # imgmin: https://github.com/rflynn/imgmin
-# PerlMagick: http://www.imagemagick.org/script/perl-magick.php
-#
-
 #
 # typically images contain more information than humans need to view it.
 # the goal of this program is to reduce image file size by reducing quality
 # while not visibly affecting image quality for casual use.
 #
 # References:
-#  1. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
+#  1. "JPEG image compression FAQ" http://www.faqs.org/faqs/jpeg-faq/part1/
 #  2. "Chroma Subsampling" http://en.wikipedia.org/wiki/Chroma_subsampling
 #  3. "Chroma sub-sampling" http://photo.net/learn/jpeg/#chrom
+#  4. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
+#  5. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
 
 use strict;
 use Image::Magick 6.7.0; # does not work with perlmagick 6.5.1, does with 6.7.0.8, not sure about in between
@@ -57,7 +56,7 @@ my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 my $tmp = search_quality($img, $dst);
 # "Chroma sub-sampling works because human vision is relatively insensitive to
 # small areas of colour. It gives a significant reduction in file sizes, with
-# little loss of perceived quality."
+# little loss of perceived quality." [2]
 $tmp->Set('sampling-factor' => '2x2');
 $tmp->Strip(); # strip an image of all profiles and comments
 $tmp->Write($dst);
