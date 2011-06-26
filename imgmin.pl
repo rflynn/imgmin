@@ -24,9 +24,11 @@ use List::Util qw(max min);
 $|++;
 
 # do not allow average pixel error to exceed this number of standard deviations
+# this is our best indicator of overall image change; it isn't perfect though
+# because in many images certain areas are more important than others
 use constant CMP_THRESHOLD		=>    1.00;
 
-# never reduce color count to less than this amount of the original
+# never modify color count more than this amount; it indicates too much change
 use constant COLOR_DENSITY_RATIO	=>    0.11;
 
 # "JPEG is designed for compressing either full-color or gray-scale images
@@ -44,10 +46,12 @@ use constant MIN_UNIQUE_COLORS		=> 4096;
 # better quality."[2]
 use constant QUALITY_MAX  		=>   95;
 
+# minimum quality to consider for an image
 # "For good-quality, full-color source images, the default IJG quality setting
 # (Q 75) is very often the best choice."[2]
 # "If the image was less than perfect quality to begin with, you might be able
 # to drop down to Q 50 without objectionable degradation."[2]
+# NOTE: 70 is a conservative setting, consider lowering it
 use constant QUALITY_MIN  		=>   70;
 
 # if the quality is already less than this, assume that a human has manually
