@@ -50,7 +50,11 @@ use constant QUALITY_MAX  		=>   95;
 # to drop down to Q 50 without objectionable degradation."[2]
 use constant QUALITY_MIN  		=>   70;
 
-# Ensure bounded worst-case performance in terms of iterations of intermediate
+# if the quality is already less than this, assume that a human has manually
+# optimized the image and do not try and second-guess them.
+use constant QUALITY_MIN_SECONDGUESS	=>   82;
+
+# Ensure bounded worst-case performance in terms of number of intermediate
 # images
 use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
 
@@ -136,6 +140,15 @@ sub search_quality
 
 	if (unique_colors($img) < MIN_UNIQUE_COLORS)
 	{
+		printf "Color count is too low, skipping...\n",
+			MIN_UNIQUE_COLORS;
+		return $img;
+	}
+
+	if (quality($img) < QUALITY_MIN_SECONDGUESS)
+	{
+		printf "Image quality is < %u, won't second-guess...\n",
+			QUALITY_MIN_SECONDGUESS;
 		return $img;
 	}
 
