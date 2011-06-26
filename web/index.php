@@ -50,7 +50,7 @@ define('TEMPDIR', './tmp/');
 define('TEMPABS', realpath('.') . '/' . TEMPDIR);
 define('IMGMINPATH', file_exists('./imgmin.pl') ? './' : '../');
 
-$which = `which convert`;
+$which = trim(`which convert`);
 if ($which)
 	define('IMAGEMAGICKPATH', substr($which, 0, strrpos($which, '/')+1));
 else
