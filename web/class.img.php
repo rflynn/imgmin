@@ -28,7 +28,10 @@ class Img
 			#echo "<pre>$cmd</pre>";
 			exec($cmd, &$out, &$err);
 			#echo '<pre>'.print_r($out,1).'</pre>';
-			#print_r($err);
+			if ($err)
+			{
+				echo "<b style=\"color:red\">$err</b>";
+			}
 		}
 		return $thumbpath;
 	}
