@@ -48,7 +48,7 @@ function url(id)
 define('THUMBSIZE', 100);
 define('TEMPDIR', './tmp/');
 define('TEMPABS', realpath('.') . '/' . TEMPDIR);
-define('IMGMINPATH', file_exists('./imgmin.sh') ? './' : '../');
+define('IMGMINPATH', file_exists('./imgmin.pl') ? './' : '../');
 
 $which = `which convert`;
 if ($which)

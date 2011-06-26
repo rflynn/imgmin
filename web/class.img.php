@@ -65,12 +65,12 @@ class Img
 
 	function resampleJPG()
 	{
-		foreach (array(0.5, 0.75, 1, 1.5, 2, 3, 4, 10) as $pct)
+		foreach (array(1) as $pct)
 		{
 			$newpath = sprintf('%s%s.%4.2f.%s', $this->tmpdir, basename($this->path), $pct, $this->ext);
 			if (!file_exists($newpath))
 			{
-				$cmd = sprintf('%simgmin.sh %s %s %.2f', IMGMINPATH, escapeshellarg($this->path), escapeshellarg($newpath), $pct);
+				$cmd = sprintf('%simgmin.pl %s %s', IMGMINPATH, escapeshellarg($this->path), escapeshellarg($newpath));
 				#echo "<pre>$cmd</pre>";
 				exec($cmd, &$out);
 				#echo '<pre>'.print_r($out,1).'</pre>';
