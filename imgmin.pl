@@ -9,11 +9,12 @@
 # while not visibly affecting image quality for casual use.
 #
 # References:
-#  1. "JPEG image compression FAQ" http://www.faqs.org/faqs/jpeg-faq/part1/
-#  2. "Chroma Subsampling" http://en.wikipedia.org/wiki/Chroma_subsampling
-#  3. "Chroma sub-sampling" http://photo.net/learn/jpeg/#chrom
-#  4. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
-#  5. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
+#  1. "Speed Matters" http://googleresearch.blogspot.com/2009/06/speed-matters.html
+#  2. "JPEG image compression FAQ" http://www.faqs.org/faqs/jpeg-faq/part1/
+#  3. "Chroma Subsampling" http://en.wikipedia.org/wiki/Chroma_subsampling
+#  4. "Chroma sub-sampling" http://photo.net/learn/jpeg/#chrom
+#  5. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
+#  6. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
 
 use strict;
 use Image::Magick 6.7.0; # does not work with perlmagick 6.5.1, does with 6.7.0.8, not sure about in between
@@ -30,23 +31,23 @@ use constant COLOR_DENSITY_RATIO	=>    0.11;
 
 # "JPEG is designed for compressing either full-color or gray-scale images
 # of natural, real-world scenes.  It works well on photographs, naturalistic
-# artwork, and similar material."[1]
+# artwork, and similar material."[2]
 # JPEGs of full-color photographs will tend to have tens of thousands of colors,
 # and it is hard for a human to notice the difference when a few thousand have
 # changed; but low-color images, specifically smooth gradients, images with
-# text, etc. are much more susceptible to pixelation and degradation; use this
-# hueristic to avoid them.
+# text, background images with light texture, etc. are much more susceptible
+# to pixelation and degradation; use this hueristic to avoid them.
 use constant MIN_UNIQUE_COLORS		=> 4096;
 
 # "Except for experimental purposes, never go above about Q 95; using Q 100
 # will produce a file two or three times as large as Q 95, but of hardly any
-# better quality."[1]
+# better quality."[2]
 use constant QUALITY_MAX  		=>   95;
 
 # "For good-quality, full-color source images, the default IJG quality setting
-# (Q 75) is very often the best choice."[1]
+# (Q 75) is very often the best choice."[2]
 # "If the image was less than perfect quality to begin with, you might be able
-# to drop down to Q 50 without objectionable degradation."[1]
+# to drop down to Q 50 without objectionable degradation."[2]
 use constant QUALITY_MIN  		=>   70;
 
 # Ensure bounded worst-case performance in terms of iterations of intermediate
@@ -81,7 +82,7 @@ my $tmp = search_quality($img, $dst);
 
 # "Chroma sub-sampling works because human vision is relatively insensitive to
 # small areas of colour. It gives a significant reduction in file sizes, with
-# little loss of perceived quality." [2]
+# little loss of perceived quality." [3]
 $tmp->Set('sampling-factor' => '2x2');
 
 # strip an image of all profiles and comments
