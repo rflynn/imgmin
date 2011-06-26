@@ -53,7 +53,7 @@ use constant QUALITY_MIN  		=>   70;
 # images
 use constant MAX_ITERATIONS		=>    5;    # maximum number of steps
 
-printf "Image::Magick %s\n", $Image::Magick::VERSION;
+#printf "Image::Magick %s\n", $Image::Magick::VERSION;
 
 if ($#ARGV != 1)
 {
