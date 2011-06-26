@@ -17,7 +17,7 @@
 #  6. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
 
 use strict;
-use Image::Magick 6.7.0; # does not work with perlmagick 6.5.1, does with 6.7.0.8, not sure about in between
+use Image::Magick 6.6.2; # does not work with perlmagick 6.5.1, does with 6.6.2+, not sure about in between
 use File::Copy qw(copy);
 use List::Util qw(max min);
 
