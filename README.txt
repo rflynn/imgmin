@@ -1,12 +1,15 @@
 
 Summary
 
-Automated image optimization to save bandwidth, by way of a feedback loop.
+Reduce image filesize by automatically determining the lowest quality setting
+that retains the original image's visual quality for casual human viewing.
 Can be incorporated into content workflows and deployment processes.
 Generally costs 1-3 seconds of runtime per image, depending on image size.
 Uses the excellent and widely available open source library ImageMagick
 http://imagemagick.org
+Automatically scales to multiple CPUs via OpenMP.
 
+Keywords: image, JPEG, minify, minification, compression, reduce, save, bandwidth
 
 Problem
 
@@ -44,6 +47,14 @@ and is not visibly degraded.
 
 This loop results in a smaller image with a visual quality within an acceptable
 visual threshold.
+
+
+Results
+
+The resulting images, at a glance, will look identical to the original image.
+Upon closer, side-by-side inspection, some quality differences can be observed.
+The goal is for casual use, especially on the web, where substantial savings in
+filesize and resulting bandwidth are worth a very minor reduction in quality.
 
 
 Installation
