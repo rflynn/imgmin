@@ -176,7 +176,7 @@ sub search_quality
 	my $qmax = $QUALITY_MAX;
 
 	# binary search for lowest quality within given thresholds
-	while ($qmax > $qmin + 1)
+	while ($qmax > $qmin + 2)
 	{
 		my ($q, $diff, $cmpstddev);
 		$q = ($qmax + $qmin) / 2;
