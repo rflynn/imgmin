@@ -18,7 +18,7 @@ if ($_POST)
         print_r($_FILES);
         echo '</pre>';
 
-    } else if (in_array($_FILES['img']['type'], array('image/jpeg', 'image/gif', 'image/png')) {
+    } else if (in_array($_FILES['img']['type'], array('image/jpeg', 'image/gif', 'image/png'))) {
 
         $filename = basename($_FILES['img']['name']);
         $src = $_FILES['img']['tmp_name'];
