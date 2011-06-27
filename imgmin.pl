@@ -78,6 +78,20 @@ if (! -f $src)
 	exit 1;
 }
 
+# image file verification
+if ($src !~ /\.jpe?g$/i)
+{
+	if ($src =~ /\.(?:gif|png)$/i)
+	{
+		printf "'%s' is not a JPEG, pass through...\n", $src;
+		copy($src, $dst) or die $!;
+		exit 0;
+	} else {
+		printf "'%s' is not an image file.\n", $src;
+		exit 1;
+	}
+}
+
 my $img = Image::Magick->new();
 $img->Read($src);
 
