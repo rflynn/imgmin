@@ -29,7 +29,7 @@ if ($_POST)
 
         exec($cmd);
         header('Content-type: image/jpeg');
-        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        //header('Content-Disposition: attachment; filename="'.$filename.'"');
         readfile($dst);
 
     }
