@@ -201,6 +201,7 @@ sub search_quality
 		}
 		printf " %.2f/%.2f@%u", $cmpstddev, $density_ratio, $q;
 	}
+	$tmp->Set(quality => ($qmax + $qmin) / 2);
 	print  "\n";
 	return $tmp;
 }
