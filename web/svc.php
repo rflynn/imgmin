@@ -18,7 +18,7 @@ if ($_POST)
         print_r($_FILES);
         echo '</pre>';
 
-    } else if (in_array($_FILES['img']['type'], array('image/jpeg', 'image/gif', 'image/png')) {
+    } else if (in_array($_FILES['img']['type'], array('image/jpeg', 'image/gif', 'image/png'))) {
 
         $filename = basename($_FILES['img']['name']);
         $src = $_FILES['img']['tmp_name'];
@@ -29,7 +29,7 @@ if ($_POST)
 
         exec($cmd);
         header('Content-type: image/jpeg');
-        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        //header('Content-Disposition: attachment; filename="'.$filename.'"');
         readfile($dst);
 
     }
