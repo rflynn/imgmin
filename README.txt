@@ -61,19 +61,22 @@ at a given quality? Does quality 50 save twice as much room as 100?
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
 
-Quality                                                              Filesize
- 100 |**************                                                | 100%
-  90 |  ##          ********                                        |  90%
-  80 |    ###               *******                                 |  80%
-  70 |       ##                    ******                           |  70%
-  60 |         ##                        ******                     |  60%
-  50 |           ##                            *****                |  50%
-  40 |             #########                        ****            |  40%
-  30 |                      ###########                 ****        |  30%
-  20 |                                 ##############       ****    |  20%
-  10 |                                               ###########****|  10%
-   0 +--------------------------------------------------------------+   0%
-    100    90    80    70     60    50    40     30     20    10    0  
+ 100% |###***********                                                
+  90% |   ####       ******** Visual Quality                         
+  80% |       ####           *******                                 
+  70% |           ####              ******                           
+  60% |               ####                ******                     
+  50% |                   #### File Size        *****                
+  40% |                       ######                 ****            
+  30% |                             #######              ****        
+  20% |                                    ###########       ****    
+  10% |                                               ###########****
+   0% +---------------------------------------------------------------
+     100    90    80    70     60    50    40     30     20    10    0  
+
+The precise numbers vary for each image, but the convex shape of the "Visual
+Quality" curve and the concave "File Size" curve hold for each image. This is
+the key to reducing file size.
 
 For an average JPEG there is a very minor, mostly insignificant change in
 *apparent* quality from 100-75, but a significant filesize difference for
@@ -115,7 +118,7 @@ Looking For Patterns
 
 Based on what we know, the easiest way around our limitations would be to
 generate multiple versions of an image in a spectrum of qualities and have
-a human choose one for each image.
+a human choose the lowest quality version of the image of acceptable quality.
 
 I proceded in this way for a variety of images, producing an interactive image
 gallery. Along with each image version I included several statistical measures
