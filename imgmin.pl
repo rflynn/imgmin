@@ -1,4 +1,5 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+# ex: set ts=8 noet:
 #
 # Author: Ryan Flynn <parseerror+imgmin@gmail.com>
 # imgmin via Perl/PerlMagick
@@ -16,10 +17,12 @@
 #  5. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
 #  6. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
 
-use strict;
-use Image::Magick 6.6.2; # does not work with perlmagick 6.5.1, does with 6.6.2+, not sure about in between
 use File::Copy qw(copy);
 use List::Util qw(max min);
+use Image::Magick 6.6.2; # does not work with perlmagick 6.5.1, does with 6.6.2+, not sure about in between
+
+use strict;
+use warnings;
 
 $|++;
 
