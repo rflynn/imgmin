@@ -85,8 +85,10 @@ at quality 75, but are half as large than they would be at quality 95. As
 quality drops below 75 there are larger apparent visual changes and reduced
 savings in filesize.
 
-This means the potential exists to transmit files to viewers twice, resulting
-in a significant decrease in load time.
+The ability to reduce an images' size by 50% means that for many images the
+potential exists to transmit them to viewers *twice as fast*, resulting in
+significant reduction in latency and overall load time, leading to a better
+viewer experience.
 
 
 Even More Detail
@@ -159,12 +161,13 @@ yields good results in tests.
 Limitations
 
 One notable exception is in low color JPEG images, such as gradients and low-
-contrast patterns used in backgrounds. The results at ~1σ are unacceptably
+contrast patterns used in backgrounds. The results at ~1σ are often unacceptably
 pixelated. Our image-wide statistical measure is not "smart" enough to catch
 this, so currently images with < 4096 colors are passed through unchanged.
 For reference the "google" logo on google.com contains 6438 colors. In practice
 this is not a problem for a typical image-heavy website because there are
-relative few layout-specific graphics which can be handled separately.
+relative few layout-specific "background" graphics which can be (and are) handled
+separately from the much larger population of "foreground" images.
 
 
 Implementation
@@ -181,7 +184,7 @@ compression settings that can be integrated into existing workflows. The method
 is low cost to deploy and run and can yield appreciable and direct benefits in the form
 of improving webserver efficiency, reducing website latency, and most
 importantly improving overall viewer experience. This method is generally
-applicable and can be applied to websites over many properties.
+applicable and can be applied to any website containing JPEG images.
 
 
 
