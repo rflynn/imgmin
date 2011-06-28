@@ -86,8 +86,8 @@ $img->Read($src);
 
 my $ks = (-s $src) / 1024.;
 
-printf "Before quality:%u colors:%u size:%5.1fKB",
-	quality($img), unique_colors($img), (-s $src) / 1024.;
+printf "Before quality:%u colors:%u size:%5.1fKB type:%s ",
+	quality($img), unique_colors($img), (-s $src) / 1024., $img->Get('type');
 my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
@@ -146,17 +146,15 @@ sub search_quality
 {
 	my ($img, $dst) = @_;
 
-	if (unique_colors($img) < MIN_UNIQUE_COLORS)
+	if (unique_colors($img) < MIN_UNIQUE_COLORS && $img->Get('type') ne 'Grayscale')
 	{
-		printf "Color count is too low, skipping...\n",
-			MIN_UNIQUE_COLORS;
+		printf "Color count is too low, skipping...\n", MIN_UNIQUE_COLORS;
 		return $img;
 	}
 
 	if (quality($img) < QUALITY_MIN_SECONDGUESS)
 	{
-		printf "Image quality is < %u, won't second-guess...\n",
-			QUALITY_MIN_SECONDGUESS;
+		printf "Quality < %u, won't second-guess...\n", QUALITY_MIN_SECONDGUESS;
 		return $img;
 	}
 
@@ -189,7 +187,7 @@ sub search_quality
 		} else {
 			$qmax = $q;
 		}
-		printf " %.2f/%.2f@%u", $cmpstddev, $density_ratio, $q;
+		printf "%.2f/%.2f@%u ", $cmpstddev, $density_ratio, $q;
 	}
 	$tmp->Set(quality => ($qmax + $qmin) / 2);
 	print  "\n";
