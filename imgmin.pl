@@ -84,7 +84,7 @@ if (! -f $src)
 my $img = Image::Magick->new();
 $img->Read($src);
 
-printf "Before quality:%u colors:%u size:%.1fKB\n",
+printf "Before quality:%u colors:%u size:%5.1fKB",
 	quality($img), unique_colors($img), (-s $src) / 1024.;
 my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
@@ -113,7 +113,7 @@ my $kd = (-s $dst) / 1024.;
 my $ksave = $ks - $kd;
 my $kpct = $ksave * 100 / $ks;
 
-printf "After quality:%u colors:%u size:%.1fKB saved:(%.1fKB %.1f%%)\n",
+printf "After  quality:%u colors:%u size:%5.1fKB saved:(%.1fKB %.1f%%)\n",
 	quality($tmp), unique_colors($tmp), $kd, $ksave, $kpct;
 
 exit;
