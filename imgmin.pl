@@ -1,4 +1,5 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+# ex: set ts=8 noet:
 #
 # Author: Ryan Flynn <parseerror+imgmin@gmail.com>
 # imgmin via Perl/PerlMagick
@@ -16,10 +17,12 @@
 #  5. "Physiology of Color Perception" http://en.wikipedia.org/wiki/Color_vision#Physiology_of_color_perception
 #  6. "PerlMagick" http://www.imagemagick.org/script/perl-magick.php
 
-use strict;
-use Image::Magick 6.6.2; # does not work with perlmagick 6.5.1, does with 6.6.2+, not sure about in between
 use File::Copy qw(copy);
 use List::Util qw(max min);
+use Image::Magick 6.6.2; # does not work with perlmagick 6.5.1, does with 6.6.2+, not sure about in between
+
+use strict;
+use warnings;
 
 $|++;
 
@@ -83,8 +86,8 @@ $img->Read($src);
 
 my $ks = (-s $src) / 1024.;
 
-printf "Before quality:%u colors:%u size:%.1fKB\n",
-	quality($img), unique_colors($img), $ks;
+printf "Before quality:%u colors:%u size:%5.1fKB",
+	quality($img), unique_colors($img), (-s $src) / 1024.;
 my $QUALITY_MAX = min(quality($img), QUALITY_MAX);
 my $QUALITY_MIN = max($QUALITY_MAX - MAX_ITERATIONS ** 2, QUALITY_MIN);
 
@@ -111,7 +114,7 @@ my $kd = (-s $dst) / 1024.;
 my $ksave = $ks - $kd;
 my $kpct = $ksave * 100 / $ks;
 
-printf "After quality:%u colors:%u size:%.1fKB saved:(%.1fKB %.1f%%)\n",
+printf "After  quality:%u colors:%u size:%5.1fKB saved:(%.1fKB %.1f%%)\n",
 	quality($tmp), unique_colors($tmp), $kd, $ksave, $kpct;
 
 exit;
