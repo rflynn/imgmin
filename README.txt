@@ -53,10 +53,10 @@ generally leads to lower image quality. Many graphics people are hesitant to
 reduce this number below 90-95.
 
 But how exactly does "quality" affect the image visibly? Does the same
-image at quality 50 look "twice as bad" than quality 100? What does twice
-as bad even mean, anyway? Can people tell the difference between an image
+image at quality 50 look "half as good" than quality 100? What does half 
+as good even mean, anyway? Can people tell the difference between an image
 saved at quality 90 and quality 89? And how much smaller is an image saved
-at a given quality? Does quality 50 save twice as much room as 100?
+at a given quality? Is the same image at quality 50 half as large as at 100?
 
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
