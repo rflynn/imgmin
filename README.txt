@@ -61,14 +61,14 @@ at a given quality? Is the same image at quality 50 half as large as at 100?
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
 
- 100% |###***********                                                
-  90% |   ####       ******** Visual Quality                         
-  80% |       ####           *******                                 
-  70% |           ####              ******                           
-  60% |               ####                ******                     
-  50% |                   #### File Size        *****                
-  40% |                       ######                 ****            
-  30% |                             #######              ****        
+ 100% |##*********                                                   
+  90% |  ###      ******* Visual Quality                         
+  80% |     ####         ********                                    
+  70% |         ####             ********                            
+  60% |             ####                 *******                     
+  50% |                 ##### File Size         *****                
+  40% |                      ######                  ****            
+  30% |                            ########              ****        
   20% |                                    ###########       ****    
   10% |                                               ###########****
    0% +---------------------------------------------------------------
