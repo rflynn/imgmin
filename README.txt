@@ -208,16 +208,27 @@ Installation
 Example use
 
 $ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
-Before quality:85 colors:44958 size:58.8KB
- 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
-After quality:71 colors:47836 size:38.4KB saved:(20.4KB 34.7%)
+Before quality:85 colors:44958 size: 58.8KB 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
+After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after2.jpg
-Before quality:92 colors:69904 size:89.7KB
- 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87 0.95/0.10@88
-After quality:88 colors:77190 size:68.4KB saved:(21.2KB 23.7%)
+# on a single-core machine
 
-real    0m1.093s
-user    0m1.590s
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+Before quality:92 colors:69904 size: 89.7KB 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
+After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
+
+real    0m3.299s
+user    0m0.308s
+sys     0m1.804s
+
+# on my dual-core laptop
+
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+Before quality:92 colors:69904 size: 89.7KB 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
+After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
+
+real    0m0.931s
+user    0m1.310s
 sys     0m0.090s
+
 
