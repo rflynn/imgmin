@@ -9,13 +9,14 @@ use warnings;
 use LWP;
 use Data::Dumper;
 
+my $filepath = '../examples/afghan-girl.jpg';
 my $ua = new LWP::UserAgent(timeout => 5);
 my $resp = $ua->post(
-        'http://localhost/imgmin/web/svc.php',
+        'http://gandalf2/imgmin/web/svc.php',
         Content_Type => 'multipart/form-data',
         Content => [
-                'img' => ['../examples/afghan-girl.jpg'],   # file path
-                'MAX_FILE_SIZE' => '10000000',              # required for PHP
+                'img' => [$filepath],
+                'MAX_FILE_SIZE' => '10000000', # required for PHP
         ]); 
 #print Dumper \$resp;
 if ($resp->code >= 400)
@@ -30,6 +31,9 @@ if ($resp->code >= 400)
 } else {
     printf "Success: %s\n", $resp->code;
     print Dumper $resp->headers;
-    print length $resp->content;
+    my $oldsize = -s $filepath;
+    my $newsize = length $resp->content;
+    printf "Before size: %u\n", $oldsize;
+    printf "After size: %u (%.1f%% savings)\n", $newsize, 100. - ($newsize / $oldsize * 100.);
 }
 
