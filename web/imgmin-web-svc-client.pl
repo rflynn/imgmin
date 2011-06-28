@@ -12,7 +12,7 @@ use Data::Dumper;
 my $filepath = '../examples/afghan-girl.jpg';
 my $ua = new LWP::UserAgent(timeout => 5);
 my $resp = $ua->post(
-        'http://gandalf2/imgmin/web/svc.php',
+        'http://localhost/imgmin/web/svc.php',
         Content_Type => 'multipart/form-data',
         Content => [
                 'img' => [$filepath],
