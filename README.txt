@@ -14,8 +14,8 @@ major browsers.
 
 Most web traffic consists of image file downloads, specifically JPEG images.
 JPEG images are not compressed by the webserver because JPEG is a binary format
-which does not compress well because it includes its own built-in compression.
-Generally it is up to the people creating the images to select an appropriate
+which does not compress well because it includes its own built-in compression,
+and generally it is up to the people creating the images to select an appropriate
 compression setting.  Compression and image quality are inversely proportional.
 The JPEG quality settings most used by graphics professional tend to be highly
 conservative, for several reasons.
@@ -45,7 +45,7 @@ which does not produce a good viewer experience. People hate to wait.
 
 "Quality" Details
 
-JPEG images contain a single setting usually referrer to as "Quality",
+JPEG images contain a single setting usually referred to as "Quality",
 and it is usually expressed as a number from 1-100, 100 being the highest.
 This knob controls how aggressive the editing program is when saving the
 file. A lower quality setting means more aggressive compression, which
