@@ -148,14 +148,14 @@ sub search_quality
 
 	if (unique_colors($img) < MIN_UNIQUE_COLORS)
 	{
-		printf "Color count is too low, skipping...\n",
+		printf " Color count is too low, skipping...\n",
 			MIN_UNIQUE_COLORS;
 		return $img;
 	}
 
 	if (quality($img) < QUALITY_MIN_SECONDGUESS)
 	{
-		printf "Image quality is < %u, won't second-guess...\n",
+		printf " Image quality is < %u, won't second-guess...\n",
 			QUALITY_MIN_SECONDGUESS;
 		return $img;
 	}
