@@ -93,12 +93,21 @@ Even More Detail
 
 So, why not just force all JPEGs to quality 75 and leave it at that?
 
-Unfortunately it is not that simple. Compression is a tricky business, and
-its results rely heavily on the specific contents of the image. This means
-that visual quality is not uniform for all images at a given quality setting.
-This means that imposing a single quality, no matter what it is, will be
-too low for some images, resulting in poor visual quality and will be
-too high for others, resulting in wasted space.
+Some sites do just that:
+
+Google Images thumbnails:  74-76
+Facebook full-size images: 85
+Yahoo frontpage JPEGs:     69-91
+Youtube frontpage JPEGs:   70-82
+Wikipedia images:          80
+Windows live background:   82
+Twitter user JPEG images:  30-100, apparently not enforcing quality
+
+But for optimal results it is not that simple. Compression results rely heavily
+on the data being compressed. This means that visual quality is not uniform for
+all images at a given quality setting. Imposing a single quality, no matter
+what it is, will be too low for some images, resulting in poor visual quality
+and will be too high for others, resulting in wasted space.
 
 So we are left with a question:
 
