@@ -14,8 +14,8 @@ major browsers.
 
 Most web traffic consists of image file downloads, specifically JPEG images.
 JPEG images are not compressed by the webserver because JPEG is a binary format
-which does not compress well because it includes its own built-in compression.
-Generally it is up to the people creating the images to select an appropriate
+which does not compress well because it includes its own built-in compression,
+and generally it is up to the people creating the images to select an appropriate
 compression setting.  Compression and image quality are inversely proportional.
 The JPEG quality settings most used by graphics professional tend to be highly
 conservative, for several reasons.
@@ -45,7 +45,7 @@ which does not produce a good viewer experience. People hate to wait.
 
 "Quality" Details
 
-JPEG images contain a single setting usually referrer to as "Quality",
+JPEG images contain a single setting usually referred to as "Quality",
 and it is usually expressed as a number from 1-100, 100 being the highest.
 This knob controls how aggressive the editing program is when saving the
 file. A lower quality setting means more aggressive compression, which
@@ -53,22 +53,22 @@ generally leads to lower image quality. Many graphics people are hesitant to
 reduce this number below 90-95.
 
 But how exactly does "quality" affect the image visibly? Does the same
-image at quality 50 look "twice as bad" than quality 100? What does twice
-as bad even mean, anyway? Can people tell the difference between an image
+image at quality 50 look "half as good" than quality 100? What does half 
+as good even mean, anyway? Can people tell the difference between an image
 saved at quality 90 and quality 89? And how much smaller is an image saved
-at a given quality? Does quality 50 save twice as much room as 100?
+at a given quality? Is the same image at quality 50 half as large as at 100?
 
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
 
- 100% |###***********                                                
-  90% |   ####       ******** Visual Quality                         
-  80% |       ####           *******                                 
-  70% |           ####              ******                           
-  60% |               ####                ******                     
-  50% |                   #### File Size        *****                
-  40% |                       ######                 ****            
-  30% |                             #######              ****        
+ 100% |##*********                                                   
+  90% |  ###      ******* Visual Quality                         
+  80% |     ####         ********                                    
+  70% |         ####             ********                            
+  60% |             ####                 *******                     
+  50% |                 ##### File Size         *****                
+  40% |                      ######                  ****            
+  30% |                            ########              ****        
   20% |                                    ###########       ****    
   10% |                                               ###########****
    0% +---------------------------------------------------------------
@@ -85,8 +85,10 @@ at quality 75, but are half as large than they would be at quality 95. As
 quality drops below 75 there are larger apparent visual changes and reduced
 savings in filesize.
 
-This means the potential exists to transmit files to viewers twice, resulting
-in a significant decrease in load time.
+The ability to reduce an images' size by 50% means that for many images the
+potential exists to transmit them to viewers *twice as fast*, resulting in
+significant reduction in latency and overall load time, leading to a better
+viewer experience.
 
 
 Even More Detail
@@ -168,12 +170,13 @@ yields good results in tests.
 Limitations
 
 One notable exception is in low color JPEG images, such as gradients and low-
-contrast patterns used in backgrounds. The results at ~1σ are unacceptably
+contrast patterns used in backgrounds. The results at ~1σ are often unacceptably
 pixelated. Our image-wide statistical measure is not "smart" enough to catch
 this, so currently images with < 4096 colors are passed through unchanged.
 For reference the "google" logo on google.com contains 6438 colors. In practice
 this is not a problem for a typical image-heavy website because there are
-relative few layout-specific graphics which can be handled separately.
+relative few layout-specific "background" graphics which can be (and are) handled
+separately from the much larger population of "foreground" images.
 
 
 Implementation
@@ -190,7 +193,7 @@ compression settings that can be integrated into existing workflows. The method
 is low cost to deploy and run and can yield appreciable and direct benefits in the form
 of improving webserver efficiency, reducing website latency, and most
 importantly improving overall viewer experience. This method is generally
-applicable and can be applied to websites over many properties.
+applicable and can be applied to any website containing JPEG images.
 
 
 References
@@ -237,16 +240,27 @@ Installation
 Example use
 
 $ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
-Before quality:85 colors:44958 size:58.8KB
- 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
-After quality:71 colors:47836 size:38.4KB saved:(20.4KB 34.7%)
+Before quality:85 colors:44958 size: 58.8KB type:TrueColor 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
+After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after2.jpg
-Before quality:92 colors:69904 size:89.7KB
- 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87 0.95/0.10@88
-After quality:88 colors:77190 size:68.4KB saved:(21.2KB 23.7%)
+# on a single-core Intel Xeon server 
 
-real    0m1.093s
-user    0m1.590s
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg 
+Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87 
+After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
+
+real    0m1.467s
+user    0m0.488s
+sys     0m0.941s
+
+# on my dual-core laptop
+
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
+After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
+
+real    0m0.931s
+user    0m1.310s
 sys     0m0.090s
+
 
