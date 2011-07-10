@@ -193,6 +193,26 @@ importantly improving overall viewer experience. This method is generally
 applicable and can be applied to websites over many properties.
 
 
+References
+
+  1. "JPEG" Wikipedia, The Free Encyclopedia. Wikimedia Foundation, Inc. 3 July 2011. Web. 7 Jul. 2011.
+     <http://en.wikipedia.org/wiki/JPEG>
+  2. "Joint Photographic Experts Group" Wikipedia, The Free Encyclopedia. Wikimedia Foundation, Inc. 29 June 2011. Web. 7 Jul. 2011.
+     <http://en.wikipedia.org/wiki/Joint_Photographic_Experts_Group>
+  3. "Information technology – Digital compression and coding of continuous-tone still images – Requirements and guidelines" 1992. Web. 7 Jul. 2011
+     <http://www.w3.org/Graphics/JPEG/itu-t81.pdf>
+  4. "Independent JPEG Group" 16 Jan. 2011 Web 7 Jul. 2011
+      <http://www.ijg.org/>
+  5. "JPEG image compression FAQ" Lane, Tom et. al. 28 Mar. 1999 Web. 7 Jul. 2011
+     <http://www.faqs.org/faqs/jpeg-faq/part1/preamble.html>
+  6. "JPEG Discrete cosine transform". Wikipedia, The Free Encyclopedia. Wikimedia Foundation, Inc. 3 July 2011. Web. 7 Jul. 2011.
+     <http://en.wikipedia.org/wiki/JPEG#Discrete_cosine_transform>
+  7. "GetImageQuantizeError()" ImageMagick Studio LLC. Revision 4754 [computer program]
+     <http://trac.imagemagick.org/browser/ImageMagick/trunk/MagickCore/quantize.c#L2142> (Accessed July 7 2011)
+  8. "A Color-based Technique for Measuring Visible Loss for Use in Image Data Communication" Melliyal Annamalai, Aurobindo Sundaram, Bharat Bhargava 1996. Web 10 Jul 2011
+     <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.50.8313>
+  9. "An Evaluation of Transmitting Compressed Images in a Wide Area Network" Melliyal Annamalai, Bharat Bhargava 1995. Web 10 Jul 2011
+     <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.53.7201>
 
 Technical Notes
 ----------------
