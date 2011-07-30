@@ -113,8 +113,8 @@ and will be too high for others, resulting in wasted space.
 
 So we are left with a question:
 
-  What is the optimal quality setting for a given image that takes up the
-  least space but still looks "good"?
+  What is the optimal quality setting for a given image with regard to filesize
+  but still remain indistinguishable from the original?
 
 The widely accepted answer, as formulated by the 'JPEG image compression FAQ':
 
