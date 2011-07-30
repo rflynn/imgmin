@@ -1,0 +1,55 @@
+
+Enable Apache2 ext_filter_module
+$ sudo ln -s /etc/apache2/mods-available/ext_filter.load /etc/apache2/mods-enabled/ext_filter.load 
+
+Create a cache directory and modifiy mod_imgmin.pl's CACHE_BASEDIR to point there
+$ sudo mkdir /var/imgmin-cache
+
+Make cache dir writeable by apache
+$ sudo chown www-data /var/imgmin-cache
+
+Put the following in config file such as /etc/apache2/sites-available/default or similar
+replace "/path/to/imgmin" with actual path
+
+<VirtualHost ...>
+
+	<IfModule ext_filter_module>
+		ExtFilterDefine imgmin mode=output intype=image/jpeg cmd="path/to/imgmin/apache/mod_imgmin.pl"
+	</IfModule>
+
+	<Directory ...>
+		...
+		<IfModule ext_filter_module>
+			SetOutputFilter imgmin
+		</IfModule>
+	</Directory>
+
+</VirtualHost>
+
+# Don't forget to restart apache / reload the configs
+$ sudo /etc/init.d/apache2 restart
+
+Before:
+
+$ curl -I http://localhost/proj/imgmin/examples/afghan-girl.jpg
+HTTP/1.1 200 OK
+Date: Sat, 30 Jul 2011 21:29:07 GMT
+Server: Apache/2.2.17 (Ubuntu)
+Last-Modified: Wed, 22 Jun 2011 23:54:33 GMT
+ETag: "9d018e-eb26-4a655b0a6e040"
+Accept-Ranges: bytes
+Content-Length: 60198
+Content-Type: image/jpeg
+
+After:
+
+$ curl -I http://localhost/proj/imgmin/examples/afghan-girl.jpg
+HTTP/1.1 200 OK
+Date: Sat, 30 Jul 2011 21:27:52 GMT
+Server: Apache/2.2.17 (Ubuntu)
+Last-Modified: Wed, 22 Jun 2011 23:54:33 GMT
+ETag: "9d018e-eb26-4a655b0a6e040"
+Accept-Ranges: bytes
+Content-Length: 38811
+Content-Type: image/jpeg
+
