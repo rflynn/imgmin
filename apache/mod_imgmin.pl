@@ -20,8 +20,9 @@ use File::Path qw(make_path);
 use constant CACHE_BASEDIR => "/var/imgmin-cache/";
 use constant IMGMIN_BASEDIR => "../";
 
+# slurp binary data on STDIN
+binmode STDIN;
 my $contents = do {
-	# slurp STDIN
 	local $/;
 	<STDIN>;
 };
@@ -42,5 +43,6 @@ if (! -e $path)
 	system((IMGMIN_BASEDIR . "imgmin.pl", $path, $path));
 }
 
+binmode STDOUT;
 exec "cat $path";
 
