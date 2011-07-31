@@ -18,7 +18,7 @@ use Digest::MD5 qw(md5_hex);
 use File::Path qw(make_path);
 
 use constant CACHE_BASEDIR => "/var/imgmin-cache/";
-use constant IMGMIN_BASEDIR => "../";
+use constant IMGMIN_BASEDIR => "/home/pizza/proj/imgmin/";
 
 # slurp binary data on STDIN
 binmode STDIN;
