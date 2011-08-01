@@ -102,7 +102,7 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         {
             unsigned q;
             double cmpstddev;
-            double distortion;
+            double distortion[CompositeChannels];
             double density_ratio;
 
             q = (qmax + qmin) / 2;
@@ -118,9 +118,14 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
             tmp = NewMagickWand();
             MagickReadImage(tmp, dst);
 
-            /* FIXME: no matter what I do error is always 0 */
-            diff = MagickCompareImages(mw, tmp, RootMeanSquaredErrorMetric, &distortion);
-            cmpstddev = GetImageFromMagickWand(diff)->error.mean_error_per_pixel * 100.;
+            (void) GetImageDistortion(
+                GetImageFromMagickWand(tmp),
+                GetImageFromMagickWand(mw),
+                MeanErrorPerPixelMetric, /* TODO: RootMeanSquaredErrorMetric */
+                distortion, exception);
+            /* FIXME: why is the crazy divisor necessary? */
+            cmpstddev = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
+
             density_ratio = abs(color_density(tmp) - original_density) / original_density;
 
             if (cmpstddev > CMP_THRESHOLD || density_ratio > COLOR_DENSITY_RATIO)
@@ -175,28 +180,20 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
 
     tmp = search_quality(mw, dst);
 
-    MagickStripImage(tmp);
+    /* "Chroma sub-sampling works because human vision is relatively insensitive to
+     * small areas of colour. It gives a significant reduction in file sizes, with
+     * little loss of perceived quality." [3]
+     */
+    (void) MagickSetImageProperty(tmp, "jpeg:sampling-factor", "2x2");
+
+    /* strip an image of all profiles and comments */
+    (void) MagickStripImage(tmp);
 
     status = MagickWriteImages(tmp, dst, MagickTrue);
     if (status == MagickFalse)
         ThrowWandException(tmp);
 
-    /* TODO: sub-sampling */
-    {
-        Image *img;
-        ImageInfo *ii = AcquireImageInfo();
-        ExceptionInfo *exception = AcquireExceptionInfo();
-        (void) DeleteImageOption(ii, "filename");
-        (void) strcpy(ii->filename, dst);
-        img = ReadImage(ii, exception);
-        SetImageOption(ii, "sampling-factor", "2x2");
-        SetImageOption(ii, "jpeg:optimize-coding", "true");
-        WriteImage(ii, img);
-        exception = DestroyExceptionInfo(exception);
-        ii = DestroyImageInfo(ii);
-    }
-
-    /* never produce a larger image; if our results did, fall back to the original */
+    /* sanity check: fall back to original image if results are larger */
     {
         struct stat st;
         off_t newsize;
