@@ -49,7 +49,7 @@ static unsigned long quality(MagickWand *mw)
 static double color_density(MagickWand *mw)
 {
     const size_t area = MagickGetImageHeight(mw) * MagickGetImageWidth(mw);
-    double density = unique_colors(mw) / area;
+    double density = (double)unique_colors(mw) / area;
     return density;
 }
 
