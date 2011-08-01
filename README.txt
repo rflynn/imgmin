@@ -216,6 +216,10 @@ References
      <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.50.8313>
   9. "An Evaluation of Transmitting Compressed Images in a Wide Area Network" Melliyal Annamalai, Bharat Bhargava 1995. Web 10 Jul 2011
      <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.53.7201>
+  10. "ImageMagick v6 Examples -- Common Image Formats: JPEG Quality vs File Size" ImageMagick Studio LLC
+     <http://www.imagemagick.org/Usage/formats/#jpg_size>
+  11. "JPEG Compression, Quality and File Size" Calvin Hass
+     <http://www.impulseadventure.com/photo/jpeg-compression.html>
 
 Technical Notes
 ----------------
