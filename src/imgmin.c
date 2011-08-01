@@ -82,17 +82,19 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
     if (unique_colors(mw) < MIN_UNIQUE_COLORS && MagickGetType(mw) != GrayscaleType)
     {
         fprintf(stderr, " Color count is too low, skipping...\n");
-        return tmp;
+        return CloneMagickWand(mw);
     }
 
     if (quality(mw) < QUALITY_MIN_SECONDGUESS)
     {
         fprintf(stderr, " Quality < %lu, won't second-guess...\n",
             QUALITY_MIN_SECONDGUESS);
-        return tmp;
+        return CloneMagickWand(mw);
     }
 
     {
+        ExceptionInfo *exception = AcquireExceptionInfo();
+
         double original_density = color_density(mw);
         unsigned qmax = min(quality(mw), QUALITY_MAX);
         unsigned qmin = max(QUALITY_MAX - (1 << MAX_ITERATIONS), QUALITY_MIN);
@@ -100,18 +102,27 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         while (qmax > qmin + 2)
         {
             MagickWand *diff;
+            Image *img;
             unsigned q;
             double cmpstddev;
-            double distortion = 0;
+            double distortion;
             double density_ratio;
 
             q = (qmax + qmin) / 2;
             tmp = CloneMagickWand(mw);
             MagickSetImageCompressionQuality(tmp, q);
+#if 1
             MagickWriteImages(tmp, dst, MagickTrue);
+            DestroyMagickWand(tmp);
+            tmp = NewMagickWand();
+            MagickReadImage(tmp, dst);
+#else
+            img = GetImageFromMagickWand(tmp);
+            ModifyImage(&img, exception);
+#endif
 
+            /* FIXME: no matter what I do error is always 0 */
             diff = MagickCompareImages(mw, tmp, RootMeanSquaredErrorMetric, &distortion);
-
             cmpstddev = GetImageFromMagickWand(diff)->error.mean_error_per_pixel * 100.;
             density_ratio = abs(color_density(tmp) - original_density) / original_density;
 
@@ -151,7 +162,6 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
     MagickBooleanType status;
     double ks = oldsize / 1024.;
 
-    /* initialize */
     MagickWandGenesis();
     mw = NewMagickWand();
 
@@ -182,8 +192,8 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
         (void) strcpy(ii->filename, dst);
         img = ReadImage(ii, exception);
         SetImageOption(ii, "sampling-factor", "2x2");
-        WriteImage(ii, img);
         SetImageOption(ii, "jpeg:optimize-coding", "true");
+        WriteImage(ii, img);
         exception = DestroyExceptionInfo(exception);
         ii = DestroyImageInfo(ii);
     }
