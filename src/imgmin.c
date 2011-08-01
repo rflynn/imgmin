@@ -138,6 +138,8 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         }
         MagickSetImageCompressionQuality(tmp, (qmax + qmin) / 2);
         putc('\n', stderr);
+
+        exception = DestroyExceptionInfo(exception);
     }
 
     return tmp;
