@@ -100,8 +100,6 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
 
         while (qmax > qmin + 2)
         {
-            MagickWand *diff;
-            Image *img;
             unsigned q;
             double cmpstddev;
             double distortion;
@@ -110,15 +108,15 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
             q = (qmax + qmin) / 2;
             tmp = CloneMagickWand(mw);
             MagickSetImageCompressionQuality(tmp, q);
-#if 1
+
+            /* 
+             * Question: can we APPLY quality changes w/o writing to a file?
+             * if not, can we write out to memory?
+             */
             MagickWriteImages(tmp, dst, MagickTrue);
             DestroyMagickWand(tmp);
             tmp = NewMagickWand();
             MagickReadImage(tmp, dst);
-#else
-            img = GetImageFromMagickWand(tmp);
-            ModifyImage(&img, exception);
-#endif
 
             /* FIXME: no matter what I do error is always 0 */
             diff = MagickCompareImages(mw, tmp, RootMeanSquaredErrorMetric, &distortion);
