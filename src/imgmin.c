@@ -25,15 +25,15 @@
 #define QUALITY_MIN_SECONDGUESS   82L
 #define MAX_ITERATIONS             5
 
-#define ThrowWandException(wand)                                  \
-{                                                                 \
-    char *description;                                            \
-      ExceptionType severity;                                     \
-      description = MagickGetException(wand, &severity);          \
-      (void) fprintf(stderr,"%s %s %lu %s\n",                     \
-        GetMagickModule(),description);                           \
-      description = (char *) MagickRelinquishMemory(description); \
-      exit(-1);                                                   \
+#define ThrowWandException(wand)                                \
+{                                                               \
+    char *description;                                          \
+    ExceptionType severity;                                     \
+    description = MagickGetException(wand, &severity);          \
+    (void) fprintf(stderr,"%s %s %lu %s\n",                     \
+      GetMagickModule(),description);                           \
+    description = (char *) MagickRelinquishMemory(description); \
+    exit(-1);                                                   \
 }
 
 static size_t unique_colors(MagickWand *mw)
