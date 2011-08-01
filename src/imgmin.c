@@ -202,6 +202,7 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
     {
         struct stat st;
         off_t newsize;
+        st.st_size = oldsize + 1; /* ensure newsize > oldsize if stat() fails for any reason */
         stat(dst, &st);
         newsize = st.st_size;
         if (newsize > oldsize)
