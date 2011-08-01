@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <math.h>
 #include <wand/MagickWand.h>
 
 #if defined(_POSIX_MAPPED_FILES) && _POSIX_MAPPED_FILES > 0
@@ -126,7 +127,7 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
             /* FIXME: why is the crazy divisor necessary? */
             cmpstddev = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
 
-            density_ratio = abs(color_density(tmp) - original_density) / original_density;
+            density_ratio = fabs(color_density(tmp) - original_density) / original_density;
 
             if (cmpstddev > CMP_THRESHOLD || density_ratio > COLOR_DENSITY_RATIO)
             {
