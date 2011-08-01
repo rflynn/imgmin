@@ -102,7 +102,7 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         {
             unsigned q;
             double cmpstddev;
-            double distortion[CompositeChannels];
+            double distortion[CompositeChannels+1];
             double density_ratio;
 
             q = (qmax + qmin) / 2;
