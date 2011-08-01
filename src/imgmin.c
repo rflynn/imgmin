@@ -150,9 +150,11 @@ static void filecopy(const char *src, const char *dst, const off_t bytes)
     int rd = open(src, O_RDONLY);
     int wr = open(dst, O_WRONLY | O_CREAT, 0644);
 #ifdef IMGMIN_USE_MMAP
+    /* in-kernel copying, more efficient */
     void *mm = mmap(NULL, (size_t)bytes, PROT_READ | MAP_SHARED, 0, rd, 0);
-    write(wr, mm, bytes);
+    write(wr, mm, (size_t)bytes);
 #else
+    /* userspace copying, less efficient */
     static char buf[32 * 1024];
     while (read(rd, buf, sizeof buf) > 0)
         write(wr, buf, sizeof buf);
