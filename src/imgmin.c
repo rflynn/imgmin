@@ -18,6 +18,10 @@
 #define IMGMIN_USE_MMAP
 #endif
 
+#ifndef MAX_PATH
+#define MAX_PATH 256
+#endif
+
 /*
  * The most important threshold; the amount of change we're
  * will to accept
@@ -112,6 +116,11 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
                                    const struct imgmin_options *opt)
 {
     MagickWand *tmp = NULL;
+    char tmpfile[MAX_PATH] = "/tmp/imgminXXXXXX";
+    if (0 == strcmp("-", dst))
+        mkstemp(tmpfile);
+    else
+        strcpy(tmpfile, dst);
 
     if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
     {
@@ -144,20 +153,18 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
             tmp = CloneMagickWand(mw);
             MagickSetImageCompressionQuality(tmp, q);
 
-            /* 
-             * Question: can we APPLY quality changes w/o writing to a file?
-             * if not, can we write out to memory?
-             */
-            MagickWriteImages(tmp, dst, MagickTrue);
+            /* apply quality setting to tmp */
+            MagickWriteImages(tmp, tmpfile, MagickTrue);
             DestroyMagickWand(tmp);
             tmp = NewMagickWand();
-            MagickReadImage(tmp, dst);
-
+            MagickReadImage(tmp, tmpfile);
+            /* measure quality effect */
             {
                 double distortion[CompositeChannels+1];
                 (void) GetImageDistortion(GetImageFromMagickWand(tmp), GetImageFromMagickWand(mw),
                                           MeanErrorPerPixelMetric, distortion, exception);
             }
+            /* eliminate half the search space based on whether this mutation is acceptable */
             {
                 /* FIXME: why is the crazy divisor necessary? */
                 const double error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
@@ -206,6 +213,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     MagickWand *mw, *tmp;
     MagickBooleanType status;
     double ks;
+    size_t newsize = oldsize + 1;
 
     MagickWandGenesis();
     mw = NewMagickWand();
@@ -248,18 +256,36 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     /* strip an image of all profiles and comments */
     (void) MagickStripImage(tmp);
 
-    status = MagickWriteImages(tmp, dst, MagickTrue);
-    if (status == MagickFalse)
-        ThrowWandException(tmp);
-
-    /* sanity check: fall back to original image if results are larger */
+    /* output image... */
+    if (0 == strcmp("-", dst))
     {
-        struct stat st;
-        size_t newsize;
+        /* ...to stdout */
+        unsigned char *blob = MagickGetImageBlob(tmp, &newsize);
+        if (newsize > oldsize)
+        {
+            (void) MagickRelinquishMemory(blob);
+            blob = MagickGetImageBlob(mw, &newsize);
+        }
+        if ((ssize_t)newsize != write(STDOUT_FILENO, blob, newsize))
+        {
+            perror("write");
+            exit(1);
+        }
+        (void) MagickRelinquishMemory(blob);
+    } else {
+        /* ...to disk */
+        status = MagickWriteImages(tmp, dst, MagickTrue);
+        if (status == MagickFalse)
+            ThrowWandException(tmp);
 
-        st.st_size = oldsize + 1; /* ensure newsize > oldsize if stat() fails for any reason */
-        stat(dst, &st);
-        newsize = (size_t)st.st_size;
+        /* sanity check: fall back to original image if results are larger */
+        {
+            struct stat st;
+
+            st.st_size = oldsize + 1; /* ensure newsize > oldsize if stat() fails for any reason */
+            stat(dst, &st);
+            newsize = (size_t)st.st_size;
+        }
 
         if (newsize > oldsize)
         {
@@ -267,18 +293,18 @@ static void doit(const char *src, const char *dst, size_t oldsize,
             DestroyMagickWand(tmp);
             tmp = CloneMagickWand(mw);
         }
+    }
 
-        {
-            double kd = newsize / 1024.;
-            double ksave = ks - kd;
-            double kpct = ksave * 100. / ks;
+    {
+        double kd = newsize / 1024.;
+        double ksave = ks - kd;
+        double kpct = ksave * 100. / ks;
 
-            fprintf(stderr,
-                "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
-                (unsigned long)quality(tmp),
-                (unsigned long)unique_colors(tmp),
-                kd, ksave, kpct);
-        }
+        fprintf(stderr,
+            "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
+            (unsigned long)quality(tmp),
+            (unsigned long)unique_colors(tmp),
+            kd, ksave, kpct);
     }
 
     /* tear it down */
@@ -361,6 +387,18 @@ int main(int argc, char *argv[])
     }
     src = argv[argc_off];
     dst = argv[argc_off+1];
+
+    if (strlen(src) > MAX_PATH)
+    {
+        fprintf(stderr, "src path too long: %s", src);
+        exit(1);
+    }
+
+    if (strlen(dst) > MAX_PATH)
+    {
+        fprintf(stderr, "dst path too long: %s", dst);
+        exit(1);
+    }
 
     if (0 != strcmp("-", src)){
         struct stat st;
