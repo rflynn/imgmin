@@ -285,6 +285,18 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
 
     while (i + 1 < argc)
     {
+        /* GNU-style separator to support files with -- prefix
+         * example for a file named "--baz": ./foo --bar -- --baz
+         */
+        if (0 == strcmp("--", argv[i]))
+        {
+            i += 1;
+            break;
+        }
+        /* if it isn't a cmdline option, we're done */
+        if (0 != strncmp("--", argv[i], 2))
+            break;
+        /* test for each specific flag */
         if (0 == strcmp("--error-threshold", argv[i])) {
             opt->error_threshold = strtod(argv[i+1], NULL);
             i += 2;
