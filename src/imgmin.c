@@ -181,14 +181,14 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
     return tmp;
 }
 
-static void filecopy(const char *src, const char *dst, const off_t bytes)
+static void filecopy(const char *src, const char *dst, const size_t bytes)
 {
     int rd = open(src, O_RDONLY);
     int wr = open(dst, O_WRONLY | O_CREAT, 0644);
 #ifdef IMGMIN_USE_MMAP
     /* in-kernel copying, more efficient */
-    void *mm = mmap(NULL, (size_t)bytes, PROT_READ | MAP_SHARED, 0, rd, 0);
-    if (write(wr, mm, (size_t)bytes) != (ssize_t)bytes)
+    void *mm = mmap(NULL, bytes, PROT_READ | MAP_SHARED, 0, rd, 0);
+    if ((size_t)write(wr, mm, bytes) != bytes)
         perror("write");
 #else
     /* userspace copying, less efficient */
@@ -200,19 +200,36 @@ static void filecopy(const char *src, const char *dst, const off_t bytes)
     close(rd);
 }
 
-static void doit(const char *src, const char *dst, const off_t oldsize,
+static void doit(const char *src, const char *dst, size_t oldsize,
                  const struct imgmin_options *opt)
 {
     MagickWand *mw, *tmp;
     MagickBooleanType status;
-    double ks = oldsize / 1024.;
+    double ks;
 
     MagickWandGenesis();
     mw = NewMagickWand();
 
-    status = MagickReadImage(mw, src);
-    if (status == MagickFalse)
-        ThrowWandException(mw);
+    if (0 == strcmp("-", src))
+    {
+        /* load image from stdin */
+        # define BIGBUF (16 * 1024 * 1024)
+        char *blob = malloc(BIGBUF);
+        oldsize = read(STDIN_FILENO, blob, BIGBUF);
+        if (BIGBUF == oldsize)
+        {
+            fprintf(stderr, "Image too large for hardcoded imgmin stdin buffer\n");
+            exit(1);
+        }
+        MagickReadImageBlob(mw, blob, oldsize);
+    } else {
+        /* load image from disk */
+        status = MagickReadImage(mw, src);
+        if (status == MagickFalse)
+            ThrowWandException(mw);
+    }
+ 
+    ks = oldsize / 1024.;
 
     fprintf(stderr,
         "Before quality:%lu colors:%lu size:%5.1fkB type:%s ",
@@ -238,11 +255,11 @@ static void doit(const char *src, const char *dst, const off_t oldsize,
     /* sanity check: fall back to original image if results are larger */
     {
         struct stat st;
-        off_t newsize;
+        size_t newsize;
 
         st.st_size = oldsize + 1; /* ensure newsize > oldsize if stat() fails for any reason */
         stat(dst, &st);
-        newsize = st.st_size;
+        newsize = (size_t)st.st_size;
 
         if (newsize > oldsize)
         {
@@ -335,6 +352,7 @@ int main(int argc, char *argv[])
     const char *src;
     const char *dst;
     struct imgmin_options opt;
+    size_t oldsize = 0;
     int argc_off = parse_opts(argc, argv, &opt);
     if (argc_off + 2 > argc)
     {
@@ -344,15 +362,17 @@ int main(int argc, char *argv[])
     src = argv[argc_off];
     dst = argv[argc_off+1];
 
-    {
+    if (0 != strcmp("-", src)){
         struct stat st;
         if (-1 == stat(src, &st))
         {
             perror("does not exist");
             exit(1);
         }
-        doit(src, dst, st.st_size, &opt);
+        oldsize = (size_t)st.st_size;
     }
+
+    doit(src, dst, oldsize, &opt);
 
     return 0;
 }
