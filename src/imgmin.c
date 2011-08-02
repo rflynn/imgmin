@@ -37,21 +37,9 @@
  */
 #define MIN_UNIQUE_COLORS       4096
 
-/*
- * highest possible output quality
- */
-#define QUALITY_MAX               95
-
-/*
- * lowest possible output quality
- */
-#define QUALITY_MIN               70
-
-/*
- * if the quality is already below this, assume the image is already
- * optimized and don't second-guess it.
- */
-#define QUALITY_MIN_SECONDGUESS   82L
+#define QUALITY_OUT_MAX               95
+#define QUALITY_OUT_MIN               70
+#define QUALITY_IN_MIN                82
 
 /*
  * never perform more than this many steps.
