@@ -157,7 +157,8 @@ static void filecopy(const char *src, const char *dst, const off_t bytes)
 #ifdef IMGMIN_USE_MMAP
     /* in-kernel copying, more efficient */
     void *mm = mmap(NULL, (size_t)bytes, PROT_READ | MAP_SHARED, 0, rd, 0);
-    write(wr, mm, (size_t)bytes);
+    if (write(wr, mm, (size_t)bytes) != (ssize_t)bytes)
+        perror("write");
 #else
     /* userspace copying, less efficient */
     static char buf[32 * 1024];
