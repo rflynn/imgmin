@@ -141,7 +141,7 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
 #define CompositeChannels 0x2f
 #endif
 
-        while (qmax > qmin && steps < opt->max_steps)
+        while (qmax > qmin + 1 && steps < opt->max_steps)
         {
             unsigned q;
 
