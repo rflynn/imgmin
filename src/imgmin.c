@@ -176,7 +176,8 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
                 fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
             }
         }
-        MagickSetImageCompressionQuality(tmp, (qmax + qmin) / 2);
+        tmp = CloneMagickWand(mw);
+        MagickSetImageCompressionQuality(tmp, qmax);
         putc('\n', stderr);
 
         exception = DestroyExceptionInfo(exception);
