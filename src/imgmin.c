@@ -14,8 +14,8 @@
 #include <wand/MagickWand.h>
 
 #if defined(_POSIX_MAPPED_FILES) && _POSIX_MAPPED_FILES > 0
-#define IMGMIN_USE_MMAP
 #include <sys/mman.h>
+#define IMGMIN_USE_MMAP
 #endif
 
 /*
