@@ -197,9 +197,10 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     MagickWandGenesis();
     mw = NewMagickWand();
 
+    /* load image... */
     if (0 == strcmp("-", src))
     {
-        /* load image from stdin */
+        /* ...from stdin */
         # define BIGBUF (16 * 1024 * 1024)
         char *blob = malloc(BIGBUF);
         oldsize = read(STDIN_FILENO, blob, BIGBUF);
@@ -211,7 +212,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
         MagickReadImageBlob(mw, blob, oldsize);
         free(blob);
     } else {
-        /* load image from disk */
+        /* ...from disk */
         status = MagickReadImage(mw, src);
         if (status == MagickFalse)
             ThrowWandException(mw);
