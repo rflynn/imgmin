@@ -188,25 +188,6 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
     return tmp;
 }
 
-static void filecopy(const char *src, const char *dst, const size_t bytes)
-{
-    int rd = open(src, O_RDONLY);
-    int wr = open(dst, O_WRONLY | O_CREAT, 0644);
-#ifdef IMGMIN_USE_MMAP
-    /* in-kernel copying, more efficient */
-    void *mm = mmap(NULL, bytes, PROT_READ | MAP_SHARED, 0, rd, 0);
-    if ((size_t)write(wr, mm, bytes) != bytes)
-        perror("write");
-#else
-    /* userspace copying, less efficient */
-    static char buf[32 * 1024];
-    while (read(rd, buf, sizeof buf) > 0)
-        write(wr, buf, sizeof buf);
-#endif
-    close(wr);
-    close(rd);
-}
-
 static void doit(const char *src, const char *dst, size_t oldsize,
                  const struct imgmin_options *opt)
 {
@@ -230,6 +211,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
             exit(1);
         }
         MagickReadImageBlob(mw, blob, oldsize);
+        free(blob);
     } else {
         /* load image from disk */
         status = MagickReadImage(mw, src);
@@ -257,41 +239,33 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     (void) MagickStripImage(tmp);
 
     /* output image... */
-    if (0 == strcmp("-", dst))
     {
-        /* ...to stdout */
         unsigned char *blob = MagickGetImageBlob(tmp, &newsize);
+
+        /* if resulting image is larger than original, use original instead */
         if (newsize > oldsize)
         {
             (void) MagickRelinquishMemory(blob);
             blob = MagickGetImageBlob(mw, &newsize);
         }
-        if ((ssize_t)newsize != write(STDOUT_FILENO, blob, newsize))
-        {
-            perror("write");
-            exit(1);
-        }
-        (void) MagickRelinquishMemory(blob);
-    } else {
-        /* ...to disk */
-        status = MagickWriteImages(tmp, dst, MagickTrue);
-        if (status == MagickFalse)
-            ThrowWandException(tmp);
 
-        /* sanity check: fall back to original image if results are larger */
         {
-            struct stat st;
+            int fd;
+            if (0 == strcmp("-", dst))
+            {
+                fd = STDOUT_FILENO;
+            } else {
+                fd = open(dst, O_WRONLY | O_CREAT, 0644);
+            }
 
-            st.st_size = oldsize + 1; /* ensure newsize > oldsize if stat() fails for any reason */
-            stat(dst, &st);
-            newsize = (size_t)st.st_size;
-        }
-
-        if (newsize > oldsize)
-        {
-            filecopy(src, dst, oldsize);
-            DestroyMagickWand(tmp);
-            tmp = CloneMagickWand(mw);
+            if ((ssize_t)newsize != write(STDOUT_FILENO, blob, newsize))
+            {
+                perror("write");
+                exit(1);
+            }
+            (void) MagickRelinquishMemory(blob);
+            if (fd != STDOUT_FILENO)
+                close(fd);
         }
     }
 
