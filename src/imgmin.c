@@ -258,7 +258,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
                 fd = open(dst, O_WRONLY | O_CREAT, 0644);
             }
 
-            if ((ssize_t)newsize != write(STDOUT_FILENO, blob, newsize))
+            if ((ssize_t)newsize != write(fd, blob, newsize))
             {
                 perror("write");
                 exit(1);
