@@ -99,6 +99,10 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         unsigned qmax = min(quality(mw), QUALITY_MAX);
         unsigned qmin = max(QUALITY_MAX - (1 << MAX_ITERATIONS), QUALITY_MIN);
 
+#ifndef CompositeChannels
+#define CompositeChannels 0x2f
+#endif
+
         while (qmax > qmin + 2)
         {
             unsigned q;
