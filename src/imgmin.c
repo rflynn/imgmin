@@ -18,12 +18,46 @@
 #include <sys/mman.h>
 #endif
 
+/*
+ * The most important threshold; the amount of change we're
+ * will to accept
+ * very conservative: 0.50
+ * conservative:      0.75
+ * sweet spot:        1.00
+ */
 #define CMP_THRESHOLD              1.00
+
+/*
+ *
+ */
 #define COLOR_DENSITY_RATIO        0.11
+
+/*
+ * avoid low-color images like gradients
+ */
 #define MIN_UNIQUE_COLORS       4096
+
+/*
+ * highest possible output quality
+ */
 #define QUALITY_MAX               95
+
+/*
+ * lowest possible output quality
+ */
 #define QUALITY_MIN               70
+
+/*
+ * if the quality is already below this, assume the image is already
+ * optimized and don't second-guess it.
+ */
 #define QUALITY_MIN_SECONDGUESS   82L
+
+/*
+ * never perform more than this many steps.
+ * trades potential quality improvements for reduced runtime,
+ * useful for low latency or very large batch runs
+ */
 #define MAX_ITERATIONS             5
 
 #define ThrowWandException(wand)                                \
