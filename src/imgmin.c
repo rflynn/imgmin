@@ -45,7 +45,7 @@
  * trades potential quality improvements for reduced runtime,
  * useful for low latency or very large batch runs
  */
-#define MAX_ITERATIONS             5
+#define MAX_STEPS                  5
 
 #define ThrowWandException(wand)                                \
 {                                                               \
@@ -66,7 +66,7 @@ struct imgmin_options
              quality_out_max,
              quality_out_min,
              quality_in_min,
-             max_iterations;
+             max_steps;
 };
 
 static size_t unique_colors(MagickWand *mw)
@@ -134,16 +134,18 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
 
         double original_density = color_density(mw);
         unsigned qmax = min(quality(mw), opt->quality_out_max);
-        unsigned qmin = max(opt->quality_out_max - (1 << MAX_ITERATIONS), opt->quality_out_min);
+        unsigned qmin = opt->quality_out_min;
+        unsigned steps = 0;
 
 #ifndef CompositeChannels
 #define CompositeChannels 0x2f
 #endif
 
-        while (qmax > qmin + 2)
+        while (qmax > qmin && steps < opt->max_steps)
         {
             unsigned q;
 
+            steps++;
             q = (qmax + qmin) / 2;
             tmp = CloneMagickWand(mw);
             MagickSetImageCompressionQuality(tmp, q);
@@ -293,7 +295,7 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     opt->quality_out_max     = QUALITY_OUT_MAX;
     opt->quality_out_min     = QUALITY_OUT_MIN;
     opt->quality_in_min      = QUALITY_IN_MIN;
-    opt->max_iterations      = MAX_ITERATIONS;
+    opt->max_steps           = MAX_STEPS;
 
     while (i + 1 < argc)
     {
@@ -330,12 +332,13 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
             opt->quality_in_min = (unsigned)atoi(argv[i+1]);
             opt->quality_in_min = min(100, opt->quality_in_min);
             i += 2;
-        } else if (0 == strcmp("--max-iterations", argv[i])) {
-            opt->max_iterations = (unsigned)atoi(argv[i+1]);
-            opt->max_iterations = min(7, opt->max_iterations);
+        } else if (0 == strcmp("--max-steps", argv[i])) {
+            opt->max_steps = (unsigned)atoi(argv[i+1]);
+            opt->max_steps = min(7, opt->max_steps);
             i += 2;
         } else {
-            break;
+            fprintf(stderr, "Unknown parameter '%s'\n", argv[i]);
+            exit(1);
         }
     }
     return i;
