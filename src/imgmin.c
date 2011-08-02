@@ -13,11 +13,6 @@
 #include <math.h>
 #include <wand/MagickWand.h>
 
-#if defined(_POSIX_MAPPED_FILES) && _POSIX_MAPPED_FILES > 0
-#include <sys/mman.h>
-#define IMGMIN_USE_MMAP
-#endif
-
 #ifndef MAX_PATH
 #define MAX_PATH 256
 #endif
