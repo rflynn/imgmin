@@ -218,8 +218,10 @@ References
      <http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.53.7201>
   10. "ImageMagick v6 Examples -- Common Image Formats: JPEG Quality vs File Size" ImageMagick Studio LLC
      <http://www.imagemagick.org/Usage/formats/#jpg_size>
-  11. "JPEG Compression, Quality and File Size" Calvin Hass
+  11. "JPEG Compression, Quality and File Size" ImpulseAdventure.com, Calvin Hass
      <http://www.impulseadventure.com/photo/jpeg-compression.html>
+  12. "Designing a JPEG Decoder & Source Code" ImpulseAdventure.com, Calvin Hass
+     <http://www.impulseadventure.com/photo/jpeg-decoder.html>
 
 Technical Notes
 ----------------
