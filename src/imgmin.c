@@ -59,6 +59,17 @@
     exit(-1);                                                   \
 }
 
+struct imgmin_options
+{
+    double   error_threshold,
+             color_density_ratio;
+    unsigned min_unique_colors,
+             quality_out_max,
+             quality_out_min,
+             quality_in_min,
+             max_iterations;
+};
+
 static size_t unique_colors(MagickWand *mw)
 {
     return MagickGetImageColors(mw);
@@ -97,20 +108,20 @@ static const char * type2str(const ImageType t)
            "???";
 }
 
-static MagickWand * search_quality(MagickWand *mw, const char *dst)
+static MagickWand * search_quality(MagickWand *mw, const char *dst,
+                                   const struct imgmin_options *opt)
 {
     MagickWand *tmp = NULL;
 
-    if (unique_colors(mw) < MIN_UNIQUE_COLORS && MagickGetType(mw) != GrayscaleType)
+    if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
     {
         fprintf(stderr, " Color count is too low, skipping...\n");
         return CloneMagickWand(mw);
     }
 
-    if (quality(mw) < QUALITY_MIN_SECONDGUESS)
+    if (quality(mw) < opt->quality_in_min)
     {
-        fprintf(stderr, " Quality < %lu, won't second-guess...\n",
-            QUALITY_MIN_SECONDGUESS);
+        fprintf(stderr, " Quality < %u, won't second-guess...\n", opt->quality_in_min);
         return CloneMagickWand(mw);
     }
 
@@ -118,8 +129,8 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         ExceptionInfo *exception = AcquireExceptionInfo();
 
         double original_density = color_density(mw);
-        unsigned qmax = min(quality(mw), QUALITY_MAX);
-        unsigned qmin = max(QUALITY_MAX - (1 << MAX_ITERATIONS), QUALITY_MIN);
+        unsigned qmax = min(quality(mw), opt->quality_out_max);
+        unsigned qmin = max(opt->quality_out_max - (1 << MAX_ITERATIONS), opt->quality_out_min);
 
 #ifndef CompositeChannels
 #define CompositeChannels 0x2f
@@ -128,9 +139,6 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
         while (qmax > qmin + 2)
         {
             unsigned q;
-            double cmpstddev;
-            double distortion[CompositeChannels+1];
-            double density_ratio;
 
             q = (qmax + qmin) / 2;
             tmp = CloneMagickWand(mw);
@@ -145,23 +153,24 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst)
             tmp = NewMagickWand();
             MagickReadImage(tmp, dst);
 
-            (void) GetImageDistortion(
-                GetImageFromMagickWand(tmp),
-                GetImageFromMagickWand(mw),
-                MeanErrorPerPixelMetric, /* TODO: RootMeanSquaredErrorMetric */
-                distortion, exception);
-            /* FIXME: why is the crazy divisor necessary? */
-            cmpstddev = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
-
-            density_ratio = fabs(color_density(tmp) - original_density) / original_density;
-
-            if (cmpstddev > CMP_THRESHOLD || density_ratio > COLOR_DENSITY_RATIO)
             {
-                qmin = q;
-            } else {
-                qmax = q;
+                double distortion[CompositeChannels+1];
+                (void) GetImageDistortion(GetImageFromMagickWand(tmp), GetImageFromMagickWand(mw),
+                                          MeanErrorPerPixelMetric, distortion, exception);
             }
-            fprintf(stderr, "%.2f/%.2f@%u ", cmpstddev, density_ratio, q);
+            {
+                /* FIXME: why is the crazy divisor necessary? */
+                const double error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
+                const double density_ratio = fabs(color_density(tmp) - original_density) / original_density;
+
+                if (error > opt->error_threshold || density_ratio > opt->color_density_ratio)
+                {
+                    qmin = q;
+                } else {
+                    qmax = q;
+                }
+                fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
+            }
         }
         MagickSetImageCompressionQuality(tmp, (qmax + qmin) / 2);
         putc('\n', stderr);
@@ -191,7 +200,8 @@ static void filecopy(const char *src, const char *dst, const off_t bytes)
     close(rd);
 }
 
-static void doit(const char *src, const char *dst, const off_t oldsize)
+static void doit(const char *src, const char *dst, const off_t oldsize,
+                 const struct imgmin_options *opt)
 {
     MagickWand *mw, *tmp;
     MagickBooleanType status;
@@ -210,7 +220,7 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
         (unsigned long)unique_colors(mw),
         ks, type2str(MagickGetImageType(mw)));
 
-    tmp = search_quality(mw, dst);
+    tmp = search_quality(mw, dst, opt);
 
     /* "Chroma sub-sampling works because human vision is relatively insensitive to
      * small areas of colour. It gives a significant reduction in file sizes, with
@@ -247,7 +257,7 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
             double kpct = ksave * 100. / ks;
 
             fprintf(stderr,
-                "After  quality:%lu colors:%lu size:%5.1fkB saved:(%.1fkB %.1f%%)\n",
+                "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
                 (unsigned long)quality(tmp),
                 (unsigned long)unique_colors(tmp),
                 kd, ksave, kpct);
@@ -260,23 +270,78 @@ static void doit(const char *src, const char *dst, const off_t oldsize)
     MagickWandTerminus();
 }
 
+static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
+{
+    int i = 1;
+
+    /* default initialization */
+    opt->error_threshold     = CMP_THRESHOLD;
+    opt->color_density_ratio = COLOR_DENSITY_RATIO;
+    opt->min_unique_colors   = MIN_UNIQUE_COLORS;
+    opt->quality_out_max     = QUALITY_OUT_MAX;
+    opt->quality_out_min     = QUALITY_OUT_MIN;
+    opt->quality_in_min      = QUALITY_IN_MIN;
+    opt->max_iterations      = MAX_ITERATIONS;
+
+    while (i + 1 < argc)
+    {
+        if (0 == strcmp("--error-threshold", argv[i])) {
+            opt->error_threshold = strtod(argv[i+1], NULL);
+            i += 2;
+        } else if (0 == strcmp("--color-density-ratio", argv[i])) {
+            opt->color_density_ratio = strtod(argv[i+1], NULL);
+            i += 2;
+        } else if (0 == strcmp("--min-unique-colors", argv[i])) {
+            opt->min_unique_colors = (unsigned)atoi(argv[i+1]);
+            i += 2;
+        } else if (0 == strcmp("--quality-out-max", argv[i])) {
+            opt->quality_out_max = (unsigned)atoi(argv[i+1]);
+            opt->quality_out_max = min(100, opt->quality_out_max);
+            i += 2;
+        } else if (0 == strcmp("--quality-out-min", argv[i])) {
+            opt->quality_out_min = (unsigned)atoi(argv[i+1]);
+            opt->quality_out_min = min(100, opt->quality_out_min);
+            i += 2;
+        } else if (0 == strcmp("--quality-in-min", argv[i])) {
+            opt->quality_in_min = (unsigned)atoi(argv[i+1]);
+            opt->quality_in_min = min(100, opt->quality_in_min);
+            i += 2;
+        } else if (0 == strcmp("--max-iterations", argv[i])) {
+            opt->max_iterations = (unsigned)atoi(argv[i+1]);
+            opt->max_iterations = min(7, opt->max_iterations);
+            i += 2;
+        } else {
+            break;
+        }
+    }
+    return i;
+}
+
 int main(int argc, char *argv[])
 {
-    struct stat st;
-    const char *src, *dst;
-    if (argc != 3)
+
+    const char *src;
+    const char *dst;
+    struct imgmin_options opt;
+    int argc_off = parse_opts(argc, argv, &opt);
+    if (argc_off + 2 > argc)
     {
         fprintf(stderr, "Usage: %s <image> <dst>\n", argv[0]);
         exit(1);
     }
-    src = argv[1];
-    dst = argv[2];
-    if (-1 == stat(src, &st))
+    src = argv[argc_off];
+    dst = argv[argc_off+1];
+
     {
-        perror("does not exist");
-        exit(1);
+        struct stat st;
+        if (-1 == stat(src, &st))
+        {
+            perror("does not exist");
+            exit(1);
+        }
+        doit(src, dst, st.st_size, &opt);
     }
-    doit(src, dst, st.st_size);
+
     return 0;
 }
 
