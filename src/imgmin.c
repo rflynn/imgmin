@@ -1,5 +1,16 @@
 /* ex: set ts=4 et: */
 /*
+ * Copyright 2011 Ryan Flynn <parseerror@gmail.com>
+ *
+ * This program is designed to optimize image file size.
+ *
+ * Specifically, to intelligently perform transformations that reduce file size
+ * while preserving visible image quality for casual human use (i.e. web page
+ * photo galleries, personal photo collections, etc.)
+ *
+ * Example use:
+ * ./imgmin original.jpg optimized.jpg
+ * Read original.jpg and write an optimized version of it to optimized.jpg
  *
  */
 
