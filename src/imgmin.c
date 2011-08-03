@@ -291,8 +291,12 @@ static void doit(const char *src, const char *dst, size_t oldsize,
                 fd = STDOUT_FILENO;
             } else {
                 fd = open(dst, O_WRONLY | O_CREAT, 0644);
+                if (-1 == fd)
+                {
+                    perror("open");
+                    exit(1);
+                }
             }
-
             if ((ssize_t)newsize != write(fd, blob, newsize))
             {
                 perror("write");
