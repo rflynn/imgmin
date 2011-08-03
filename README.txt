@@ -235,12 +235,20 @@ Installation
 
 	Ubuntu Linux and Debian Linux:
 
+		sudo apt-get install libgraphicsmagick1-dev
 		sudo apt-get install imagemagick
 
 		and then the language-specific bindings if you want them:
 
 		sudo apt-get install perlmagick
 		sudo apt-get install python-pythonmagick
+
+	For apache module and standalone C program we need ImageMagick dev libraries and headers:
+
+		FIXME: which package is this on Ubuntu and Redhat?
+
+		Install ImageMagick from source:
+			ftp://ftp.imagemagick.org/pub/ImageMagick
 
 
 Example use
