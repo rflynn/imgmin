@@ -8,7 +8,7 @@
 # read image file contents from STDIN
 # if I haven't seen this file before
 #	write it to disk
-#	run imgmin.pl on it
+#	run imgmin on it
 # write resulting image contents to STDOUT
 
 use strict;
@@ -18,7 +18,7 @@ use Digest::MD5 qw(md5_hex);
 use File::Path qw(make_path);
 
 use constant CACHE_BASEDIR => "/var/imgmin-cache/";
-use constant IMGMIN_BASEDIR => "/home/pizza/proj/imgmin/";
+use constant IMGMIN_BASEDIR => "/home/pizza/proj/imgmin/src";
 
 # slurp binary data on STDIN
 binmode STDIN;
@@ -40,7 +40,7 @@ if (! -e $path)
 	open(F, ">$path") or die "$path: $!";
 	print F $contents;
 	close F;
-	system((IMGMIN_BASEDIR . "imgmin.pl", $path, $path));
+	system((IMGMIN_BASEDIR . "imgmin", $path, $path));
 }
 
 binmode STDOUT;

@@ -2,7 +2,7 @@
 Enable Apache2 ext_filter_module
 $ sudo ln -s /etc/apache2/mods-available/ext_filter.load /etc/apache2/mods-enabled/ext_filter.load 
 
-Create a cache directory and modifiy mod_imgmin.pl's CACHE_BASEDIR to point there
+Create a cache directory and modifiy mod_ext_filter_imgmin.pl's CACHE_BASEDIR to point there
 $ sudo mkdir /var/imgmin-cache
 
 Make cache dir writeable by apache
@@ -14,7 +14,7 @@ replace "/path/to/imgmin" with actual path
 <VirtualHost ...>
 
 	<IfModule ext_filter_module>
-		ExtFilterDefine imgmin mode=output intype=image/jpeg cmd="path/to/imgmin/apache/mod_imgmin.pl"
+		ExtFilterDefine imgmin mode=output intype=image/jpeg cmd="path/to/imgmin/src/apache/mod_ext_filter_imgmin.pl"
 	</IfModule>
 
 	<Directory ...>
