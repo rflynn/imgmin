@@ -113,9 +113,15 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
     MagickWand *tmp = NULL;
     char tmpfile[MAX_PATH] = "/tmp/imgminXXXXXX";
     if (0 == strcmp("-", dst))
-        mkstemp(tmpfile);
-    else
+    {
+        if (-1 == mkstemp(tmpfile))
+        {
+            perror("mkstemp");
+            return CloneMagickWand(mw);
+        }
+    } else {
         strcpy(tmpfile, dst);
+    }
 
     if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
     {
