@@ -29,32 +29,51 @@
 #endif
 
 /*
- * The most important threshold; the amount of change we're
- * will to accept
- * very conservative: 0.50
- * conservative:      0.75
- * sweet spot:        1.00
+ * The most important threshold and the crux of the algorithm;
+ * the amount of mean pixel change we're willing to accept.
+ * conservative=0.5 safe=0.75 sweetspot=1.00 toohigh=1.25
  */
-#define CMP_THRESHOLD              1.00
+#define ERROR_THRESHOLD            1.00
 
 /*
- *
+ * secondary check that prevents the total number of colors from changing
+ * beyond a certain percent. helpful in a small number of cases.
  */
 #define COLOR_DENSITY_RATIO        0.11
 
 /*
- * avoid low-color images like gradients
+ * if an image has fewer colors than this, leave it untouched.
+ * low-color images like gradients, line-drawings, etc. produce unacceptable
+ * artifacts that are currently undetectable
  */
 #define MIN_UNIQUE_COLORS       4096
 
-#define QUALITY_OUT_MAX               95
-#define QUALITY_OUT_MIN               70
-#define QUALITY_IN_MIN                82
+/*
+ * default possible output quality range
+ * QUALITY_OUT_MAX: maximum=100 conservative=95 aggressive=85
+ * QUALITY_OUT_MIN: maximum=100 conservative=70 aggressive=50
+ * override: --quality-out-max N
+ *           --quality-out-min N
+ */
+#define QUALITY_OUT_MAX           95
+#define QUALITY_OUT_MIN           70
+
+/*
+ * if input image quality is already lower than this, assume it has been
+ * optimized already and leave it unchanged.
+ * this prevents multiple invocations from degrading an image to quality=0
+ *
+ * override via: --quality-in-min N
+ */
+#define QUALITY_IN_MIN            82
 
 /*
  * never perform more than this many steps.
- * trades potential quality improvements for reduced runtime,
- * useful for low latency or very large batch runs
+ * each step transforms the entire image and whose cost is based on the size
+ * and complexity of the image it's working on.
+ * trade potential quality improvements for reduced runtime, useful for low
+ * latency or very large batch runs
+ * override via --max-steps N
  */
 #define MAX_STEPS                  5
 
@@ -308,7 +327,7 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     int i = 1;
 
     /* default initialization */
-    opt->error_threshold     = CMP_THRESHOLD;
+    opt->error_threshold     = ERROR_THRESHOLD;
     opt->color_density_ratio = COLOR_DENSITY_RATIO;
     opt->min_unique_colors   = MIN_UNIQUE_COLORS;
     opt->quality_out_max     = QUALITY_OUT_MAX;
