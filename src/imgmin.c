@@ -24,6 +24,11 @@
 #include <math.h>
 #include <wand/MagickWand.h>
 
+/* TODO: this is defined in the ImageMagick header magick/magick-type.h */
+#ifndef CompositeChannels
+#define CompositeChannels 0x2f
+#endif
+
 #ifndef MAX_PATH
 #define MAX_PATH 256
 #endif
@@ -137,6 +142,14 @@ static const char * type2str(const ImageType t)
            "???";
 }
 
+/*
+ * given a source image, a destination filepath and a set of image metadata thresholds,
+ * search for the lowest-quality version of the source image whose properties fall within our
+ * thresholds.
+ * this will produce an image file that looks the same to the casual observer, but which
+ * contains much less information and results in a smaller file.
+ * typical savings on unoptimized images vary widely from 10-80%, with 25-50% being most common.
+ */
 static MagickWand * search_quality(MagickWand *mw, const char *dst,
                                    const struct imgmin_options *opt)
 {
@@ -153,6 +166,10 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
         strcpy(tmpfile, dst);
     }
 
+    /*
+     * The overwhelming majority of JPEGs are TrueColorType; it is those types, with a low
+     * unique color count, that we must avoid.
+     */
     if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
     {
         fprintf(stderr, " Color count is too low, skipping...\n");
@@ -168,49 +185,60 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
     {
         ExceptionInfo *exception = AcquireExceptionInfo();
 
-        double original_density = color_density(mw);
+        const double original_density = color_density(mw);
         unsigned qmax = min(quality(mw), opt->quality_out_max);
         unsigned qmin = opt->quality_out_min;
         unsigned steps = 0;
 
-#ifndef CompositeChannels
-#define CompositeChannels 0x2f
-#endif
-
+        /*
+         * binary search of quality space for optimally lowest quality that
+         * produces an acceptable level of distortion
+         */
         while (qmax > qmin + 1 && steps < opt->max_steps)
         {
+            double distortion[CompositeChannels+1];
+            double error;
+            double density_ratio;
             unsigned q;
 
             steps++;
             q = (qmax + qmin) / 2;
+
+            /* change quality */
             tmp = CloneMagickWand(mw);
             MagickSetImageCompressionQuality(tmp, q);
 
-            /* apply quality setting to tmp */
+            /* apply quality change */
             MagickWriteImages(tmp, tmpfile, MagickTrue);
             DestroyMagickWand(tmp);
             tmp = NewMagickWand();
             MagickReadImage(tmp, tmpfile);
-            /* measure quality effect */
-            {
-                double distortion[CompositeChannels+1];
-                (void) GetImageDistortion(GetImageFromMagickWand(tmp), GetImageFromMagickWand(mw),
-                                          MeanErrorPerPixelMetric, distortion, exception);
-            }
-            /* eliminate half the search space based on whether this mutation is acceptable */
-            {
-                /* FIXME: why is the crazy divisor necessary? */
-                const double error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
-                const double density_ratio = fabs(color_density(tmp) - original_density) / original_density;
 
-                if (error > opt->error_threshold || density_ratio > opt->color_density_ratio)
-                {
-                    qmin = q;
-                } else {
-                    qmax = q;
-                }
-                fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
+            /* quantify distortion produced by quality change
+             * NOTE: writes to distortion[], which we don't care about
+             * and to image(tmp)->error, which we do care about
+             */
+            (void) GetImageDistortion(GetImageFromMagickWand(tmp),
+                                      GetImageFromMagickWand(mw),
+                                      MeanErrorPerPixelMetric,
+                                      distortion,
+                                      exception);
+            /* FIXME: in perlmagick i was getting back a number [0,255.0],
+             * here something else is happening... the hardcoded divisor
+             * is an imperfect attempt to scale the number back to the
+             * perlmagick results. I really need to look into this.
+             */
+            error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
+            density_ratio = fabs(color_density(tmp) - original_density) / original_density;
+        
+            /* eliminate half search space based on whether distortion within thresholds */
+            if (error > opt->error_threshold || density_ratio > opt->color_density_ratio)
+            {
+                qmin = q;
+            } else {
+                qmax = q;
             }
+            fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
         }
         tmp = CloneMagickWand(mw);
         MagickSetImageCompressionQuality(tmp, qmax);
