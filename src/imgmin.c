@@ -240,9 +240,23 @@ static MagickWand * search_quality(MagickWand *mw, const char *dst,
             }
             fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
         }
-        tmp = CloneMagickWand(mw);
-        MagickSetImageCompressionQuality(tmp, qmax);
         putc('\n', stderr);
+
+        MagickSetImageCompressionQuality(mw, qmax);
+
+        /* "Chroma sub-sampling works because human vision is relatively insensitive to
+         * small areas of colour. It gives a significant reduction in file sizes, with
+         * little loss of perceived quality." [3]
+         */
+        (void) MagickSetImageProperty(mw, "jpeg:sampling-factor", "2x2");
+
+        /* strip an image of all profiles and comments */
+        (void) MagickStripImage(mw);
+
+        MagickWriteImages(mw, tmpfile, MagickTrue);
+        (void) DestroyMagickWand(tmp);
+        tmp = NewMagickWand();
+        MagickReadImage(tmp, tmpfile);
 
         exception = DestroyExceptionInfo(exception);
     }
@@ -291,15 +305,6 @@ static void doit(const char *src, const char *dst, size_t oldsize,
         ks, type2str(MagickGetImageType(mw)));
 
     tmp = search_quality(mw, dst, opt);
-
-    /* "Chroma sub-sampling works because human vision is relatively insensitive to
-     * small areas of colour. It gives a significant reduction in file sizes, with
-     * little loss of perceived quality." [3]
-     */
-    (void) MagickSetImageProperty(tmp, "jpeg:sampling-factor", "2x2");
-
-    /* strip an image of all profiles and comments */
-    (void) MagickStripImage(tmp);
 
     /* output image... */
     {
