@@ -1,4 +1,16 @@
 
+Summary
+
+	JPEG image files constitute a significant minority of total web
+	traffic. JPEGs are binary files that do not benefit from existing
+	standard (gzip) compression. 
+	Imgmin applies established best practices and statistical means to
+	automatically optimize JPEG filesize for each unique image without
+	sacrificing quality, resulting in significant site-wide latency
+	reduction and bandwidth savings which improves user experience and
+	saves money.
+
+
 The Problem
 
 Websites are composed of several standard components.
