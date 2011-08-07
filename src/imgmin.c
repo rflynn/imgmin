@@ -22,7 +22,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <math.h>
-#include <wand/MagickWand.h>
+#include <float.h> /* DBL_EPSILON */
+#include "imgmin.h"
 
 /* TODO: this is defined in the ImageMagick header magick/magick-type.h */
 #ifndef CompositeChannels
@@ -93,17 +94,6 @@
     exit(-1);                                                   \
 }
 
-struct imgmin_options
-{
-    double   error_threshold,
-             color_density_ratio;
-    unsigned min_unique_colors,
-             quality_out_max,
-             quality_out_min,
-             quality_in_min,
-             max_steps;
-};
-
 static size_t unique_colors(MagickWand *mw)
 {
     return MagickGetImageColors(mw);
@@ -150,7 +140,7 @@ static const char * type2str(const ImageType t)
  * contains much less information and results in a smaller file.
  * typical savings on unoptimized images vary widely from 10-80%, with 25-50% being most common.
  */
-static MagickWand * search_quality(MagickWand *mw, const char *dst,
+MagickWand * search_quality(MagickWand *mw, const char *dst,
                                    const struct imgmin_options *opt)
 {
     MagickWand *tmp = NULL;
@@ -359,10 +349,8 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     MagickWandTerminus();
 }
 
-static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
+int imgmin_options_init(struct imgmin_options *opt)
 {
-    int i = 1;
-
     /* default initialization */
     opt->error_threshold     = ERROR_THRESHOLD;
     opt->color_density_ratio = COLOR_DENSITY_RATIO;
@@ -371,6 +359,31 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     opt->quality_out_min     = QUALITY_OUT_MIN;
     opt->quality_in_min      = QUALITY_IN_MIN;
     opt->max_steps           = MAX_STEPS;
+
+    return 1;
+}
+
+void imgmin_opt_set_error_threshold(
+    struct imgmin_options *opt,
+    const char *arg)
+{
+    opt->error_threshold = strtod(arg, NULL);
+    /* constrain range */
+    if (opt->error_threshold < DBL_EPSILON)
+    {
+        opt->error_threshold = DBL_EPSILON;
+    }
+    else if (opt->error_threshold > 255.0)
+    {
+        opt->error_threshold = 255.0;
+    }
+}
+
+static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
+{
+    int i = 1;
+
+    imgmin_options_init(opt);
 
     while (i + 1 < argc)
     {
@@ -387,7 +400,7 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
             break;
         /* test for each specific flag */
         if (0 == strcmp("--error-threshold", argv[i])) {
-            opt->error_threshold = strtod(argv[i+1], NULL);
+            imgmin_opt_set_error_threshold(opt, argv[i+1]);
             i += 2;
         } else if (0 == strcmp("--color-density-ratio", argv[i])) {
             opt->color_density_ratio = strtod(argv[i+1], NULL);
@@ -419,6 +432,7 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     return i;
 }
 
+#ifndef IMGMIN_LIB
 int main(int argc, char *argv[])
 {
 
@@ -461,4 +475,5 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+#endif
 
