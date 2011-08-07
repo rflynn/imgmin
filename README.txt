@@ -242,27 +242,29 @@ Technical Notes
 
 Installation
 
-	Imagemagick dependency:
+    Prerequisites
 
-	Redhat Linux:
-		sudo yum install imagemagick
+    On Ubuntu Linux via apt-get:
+    $ sudo apt-get install imagemagick libgraphicsmagick1-dev perlmagick apache2-prefork-dev
 
-	Ubuntu Linux and Debian Linux:
+    On Redhat Linux via yum:
+    $ sudo yum install Imagemagick ImageMagick-devel Perlmagick apache2-devel
 
-		sudo apt-get install libgraphicsmagick1-dev
-		sudo apt-get install imagemagick
+    On Unix via source:
+    $ cd /usr/local/src                                                # source directory of choice
+    $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-6.7.1-3.tar.gz
+    $ sudo gzip -dc ImageMagick-6.7.1-3.tar.gz | sudo tar xvf -        # extract
+    $ cd ImageMagick-6.7.1-3                                           # change dir
+    $ sudo ./configure                                                 # configure
+    $ sudo make -j2                                                    # compile
+    $ sudo make install                                                # install
 
-		and then the language-specific bindings if you want them:
+    imgmin
 
-		sudo apt-get install perlmagick
-		sudo apt-get install python-pythonmagick
-
-	For apache module and standalone C program we need ImageMagick dev libraries and headers:
-
-		FIXME: which package is this on Ubuntu and Redhat?
-
-		Install ImageMagick from source:
-			ftp://ftp.imagemagick.org/pub/ImageMagick
+    $ git clone git@github.com:rflynn/imgmin.git
+    $ cd imgmin
+    $ make
+    $ sudo make install
 
 
 Example use
