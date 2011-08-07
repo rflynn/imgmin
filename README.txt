@@ -1,24 +1,26 @@
 
+$ git clone git@github.com:rflynn/imgmin.git
+
 Summary
 
-	JPEG image files constitute a significant minority of total web
-	traffic. JPEGs are binary files that do not benefit from existing
-	standard (gzip) compression. 
-	Imgmin applies established best practices and statistical means to
-	automatically optimize JPEG filesize for each unique image without
-	sacrificing quality, resulting in significant site-wide latency
-	reduction and bandwidth savings which improves user experience and
-	saves money.
+    JPEG image files constitute a significant minority of total web
+    traffic. JPEGs are binary files that do not benefit from existing
+    standard (gzip) compression.
+    Imgmin applies established best practices and statistical means to
+    automatically optimize JPEG filesize for each unique image without
+    sacrificing quality, resulting in significant site-wide latency
+    reduction and bandwidth savings which improves user experience and
+    saves money.
 
 
 The Problem
 
 Websites are composed of several standard components.
-	HTML describes overall page content and organization
-	CSS describes specific page layout and style
-	Javascript allows interactive client-side programming
-	XML is used for data exchange such as RSS feeds
-	JPEG is a file format for photo-realistic images
+    HTML describes overall page content and organization
+    CSS describes specific page layout and style
+    Javascript allows interactive client-side programming
+    XML is used for data exchange such as RSS feeds
+    JPEG is a file format for photo-realistic images
 
 All but one of these component types are text-based. Text files can be
 automatically compressed by a webserver using gzip, which is supported by all
@@ -65,7 +67,7 @@ generally leads to lower image quality. Many graphics people are hesitant to
 reduce this number below 90-95.
 
 But how exactly does "quality" affect the image visibly? Does the same
-image at quality 50 look "half as good" than quality 100? What does half 
+image at quality 50 look "half as good" than quality 100? What does half
 as good even mean, anyway? Can people tell the difference between an image
 saved at quality 90 and quality 89? And how much smaller is an image saved
 at a given quality? Is the same image at quality 50 half as large as at 100?
@@ -73,18 +75,18 @@ at a given quality? Is the same image at quality 50 half as large as at 100?
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
 
- 100% |##*********                                                   
-  90% |  ###      ******* Visual Quality                         
-  80% |     ####         ********                                    
-  70% |         ####             ********                            
-  60% |             ####                 *******                     
-  50% |                 ##### File Size         *****                
-  40% |                      ######                  ****            
-  30% |                            ########              ****        
-  20% |                                    ###########       ****    
+ 100% |##*********
+  90% |  ###      ******* Visual Quality
+  80% |     ####         ********
+  70% |         ####             ********
+  60% |             ####                 *******
+  50% |                 ##### File Size         *****
+  40% |                      ######                  ****
+  30% |                            ########              ****
+  20% |                                    ###########       ****
   10% |                                               ###########****
    0% +---------------------------------------------------------------
-     100    90    80    70     60    50    40     30     20    10    0  
+     100    90    80    70     60    50    40     30     20    10    0
 
 The precise numbers vary for each image, but the convex shape of the "Visual
 Quality" curve and the concave "File Size" curve hold for each image. This is
@@ -269,10 +271,10 @@ $ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
 Before quality:85 colors:44958 size: 58.8KB type:TrueColor 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
 After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
 
-# on a single-core Intel Xeon server 
+# on a single-core Intel Xeon server
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg 
-Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87 
+$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
 After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
 
 real    0m1.467s
