@@ -173,7 +173,7 @@ static MagickWand * cache_get(const char *path, imgmin_ctx *ctx)
                 cached = DestroyMagickWand(cached);
             }
         } else {
-            perror("MagickReadImageFile");
+            perror("NewMagickWand");
         }
         fclose(fd);
     }
