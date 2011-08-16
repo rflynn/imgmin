@@ -97,7 +97,8 @@ static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
     {
         int fmt;
 
-        fmt = snprintf(path, PATH_MAX, "%s/%02x/%02x/%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+        fmt = snprintf(path, PATH_MAX,
+            "%s/%02x/%02x/%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
             MOD_IMGMIN_CACHE_PREFIX,
             digest[0], digest[1], digest[2], digest[3],
             digest[4], digest[5], digest[6], digest[7],
