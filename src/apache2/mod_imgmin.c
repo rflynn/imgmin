@@ -162,10 +162,8 @@ static MagickWand * cache_get(const char *path, imgmin_ctx *ctx)
     FILE *fd;
 
     fd = fopen(path, "rb");
-    if (!fd)
+    if (fd)
     {
-        perror("cache_get fopen");
-    } else {
         cached = NewMagickWand();
         if (cached)
         {
