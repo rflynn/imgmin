@@ -231,7 +231,7 @@ static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
 
     /*
      * calculate the cache path based on the original image contents
-     * and attempt to load its cached results
+     * and attempt to load cached results
      */
     mw = NULL;
     if (cache_path(ctx->buffer, ctx->buflen, path, c->cache_dir))
