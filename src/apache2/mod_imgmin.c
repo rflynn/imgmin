@@ -31,25 +31,24 @@ module AP_MODULE_DECLARE_DATA imgmin_module;
 typedef struct {
     struct imgmin_options opt;
     apr_size_t bufferSize;
+    char cache_dir[PATH_MAX];
 } imgmin_filter_config;
 
-/* TODO: make this runtime configurable */
-#define MOD_IMGMIN_CACHE_PREFIX "/var/imgmin-cache"
-
 /*
- * NOTE: we need the entire file in a contiguous buffer (can ImageMagick handle a stream?)
- * and as far as I know the contents may come in multiple buckets, so we hardcode an
- * upper limit, allocate a buffer and append into it until we see the EOS, then
- * process it and pass it on
+ * default/min/max config settings
+ * see 'imgmin_filter_cmds' at the bottom of the file for the keys to override this in httpd.conf
  */
-#define DEFAULT_BUFFERSIZE (4 * 1024 * 1024)
+#define CACHE_DIR_DEFAULT   "/var/imgmin-cache"
+#define BUFFERSIZE_DEFAULT (1024 * 1024 * 4)
+#define BUFFERSIZE_MIN     (1024 * 256) /* anything less than this is stupid */
 
 static void *create_imgmin_server_config(apr_pool_t *p, server_rec *s)
 {
     imgmin_filter_config *c = apr_pcalloc(p, sizeof *c);
 
     (void) imgmin_options_init(&c->opt);
-    c->bufferSize = DEFAULT_BUFFERSIZE;
+    c->bufferSize = BUFFERSIZE_DEFAULT;
+    strcpy(c->cache_dir, CACHE_DIR_DEFAULT);
     /* intialize ImageMagick */
     MagickWandGenesis();
     return c;
@@ -63,6 +62,41 @@ static const char *imgmin_set_error_threshold(cmd_parms *cmd,
                                 cmd->server->module_config,
                                 &imgmin_module);
     imgmin_opt_set_error_threshold(&c->opt, arg);
+    return NULL;
+}
+
+static const char *imgmin_set_cache_dir(cmd_parms *cmd,
+                                        void *dummy,
+                                        const char *arg)
+{
+    imgmin_filter_config *c = ap_get_module_config(
+                                cmd->server->module_config,
+                                &imgmin_module);
+    if (strlen(arg) >= sizeof c->cache_dir)
+    {
+        fprintf(stderr, "Cache Dir length > %lu! '%s'\n",
+            sizeof c->cache_dir, arg);
+    } else {
+        strcpy(c->cache_dir, arg);
+    }
+    return NULL;
+}
+
+static const char *imgmin_set_buffer_size(cmd_parms *cmd,
+                                          void *dummy,
+                                          const char *arg)
+{
+    imgmin_filter_config *c = ap_get_module_config(
+                                cmd->server->module_config,
+                                &imgmin_module);
+    apr_int64_t n = apr_strtoi64(arg, NULL, 10);
+    if (errno == ERANGE) {
+        fprintf(stderr, "Invalid bufferSize: %lu\n", (unsigned long)n);
+    } else if (n < 64 * 1024) {
+        fprintf(stderr, "bufferSize too small: %lu\n", (unsigned long)n);
+    } else {
+        c->bufferSize = n;
+    }
     return NULL;
 }
 
@@ -83,7 +117,7 @@ static void magickfree(void *data)
     (void) MagickRelinquishMemory(data);
 }
 
-static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
+static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX], const char *prefix)
 {
     unsigned char digest[APR_MD5_DIGESTSIZE];
     char *result = NULL;
@@ -94,7 +128,7 @@ static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
 
         fmt = snprintf(path, PATH_MAX,
             "%s/%02x/%02x/%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-            MOD_IMGMIN_CACHE_PREFIX,
+            prefix,
             digest[0], digest[1], digest[2], digest[3],
             digest[4], digest[5], digest[6], digest[7],
             digest[8], digest[9], digest[10], digest[11],
@@ -129,18 +163,18 @@ static int mkdir_n(const char path[PATH_MAX], size_t len)
  * given a path of prefix/XX/YY/ZZZZZZZZZZZZZZZ
  *  ensure that prefix/XX/YY exists
  */
-static void cache_path_ensure(const char path[PATH_MAX])
+static void cache_path_ensure(const char *prefix, const char path[PATH_MAX])
 {
-    size_t prelen = strlen(MOD_IMGMIN_CACHE_PREFIX);
+    size_t prelen = strlen(prefix);
     (void) mkdir_n(path, prelen+3);
     (void) mkdir_n(path, prelen+3+3);
 }
 
-static void cache_set(const char *path, unsigned char *blob, size_t len)
+static void cache_set(const char *prefix, const char *path, unsigned char *blob, size_t len)
 {
     FILE *fd;
 
-    cache_path_ensure(path);
+    cache_path_ensure(prefix, path);
     fd = fopen(path, "wb");
     if (!fd)
     {
@@ -200,7 +234,7 @@ static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
      * and attempt to load its cached results
      */
     mw = NULL;
-    if (cache_path(ctx->buffer, ctx->buflen, path))
+    if (cache_path(ctx->buffer, ctx->buflen, path, c->cache_dir))
     {
         mw = cache_get(path, ctx);
     }
@@ -228,7 +262,7 @@ static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
         /*
          * if the results aren't from the cache, write to the cache for later use
          */
-        cache_set(path, blob, bloblen);
+        cache_set(c->cache_dir, path, blob, bloblen);
         tmp = DestroyMagickWand(tmp);
     }
     /*
@@ -352,7 +386,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             continue;
         }
 
-
         /* append bucket data to ctx->buffer... */
         {
             const char *data = NULL;
@@ -369,7 +402,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             APR_BUCKET_REMOVE(e);
         }
 
-
         apr_bucket_delete(e);
     }
 
@@ -385,6 +417,8 @@ static void register_hooks(apr_pool_t *p)
 
 static const command_rec imgmin_filter_cmds[] = {
     AP_INIT_TAKE1("ImgminErrorThreshold",      imgmin_set_error_threshold, NULL, RSRC_CONF, "Set error threshold (0-255.0)"),
+    AP_INIT_TAKE1("ImgminCacheDir",            imgmin_set_cache_dir,       NULL, RSRC_CONF, "Cache dir prefix. Default /var/imgmin-cache"),
+    AP_INIT_TAKE1("ImgminBufferSize",          imgmin_set_buffer_size,     NULL, RSRC_CONF, "Set maximum buffer size based on largest feasible image"),
     {NULL}
 };
 
