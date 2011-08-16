@@ -9,6 +9,7 @@
 #include "apr_general.h"
 #include "util_filter.h"
 #include "apr_buckets.h"
+#include "apr_md5.h"
 #include "http_request.h"
 #define APR_WANT_STRFUNC
 #include "apr_want.h"
@@ -23,6 +24,9 @@ typedef struct {
     struct imgmin_options opt;
     apr_size_t bufferSize;
 } imgmin_filter_config;
+
+/* TODO: make this runtime configurable */
+#define MOD_IMGMIN_CACHE_PREFIX "/var/imgmin-cache"
 
 /*
  * NOTE: we need the entire file in a contiguous buffer (can ImageMagick handle a stream?)
@@ -72,6 +76,113 @@ static void magickfree(void *data)
     (void) MagickRelinquishMemory(data);
 }
 
+static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
+{
+    unsigned char digest[APR_MD5_DIGESTSIZE];
+    char *result = NULL;
+
+    if (apr_md5(digest, blob, len) == APR_SUCCESS)
+    {
+        int fmt;
+
+        fmt = snprintf(path, sizeof path, "%s/%c%c/%c%c/%s",
+            MOD_IMGMIN_CACHE_PREFIX, digest[0], digest[1],
+            digest[2], digest[3], digest+4);
+        if (fmt >= 0 && fmt < sizeof path)
+        {
+            result = path;
+        }
+    }
+    return result;
+}
+
+static int mkdir_n(const char path[PATH_MAX], size_t len)
+{
+    char tmppath[PATH_MAX];
+
+    strcpy(tmppath, path);
+    tmppath[len] = '\0';
+    fprintf(stderr, "mkdir(%s)\n", tmppath);
+    if (mkdir(tmppath, 0644) != 0)
+    {
+        if (errno != EEXIST)
+        {
+            perror("mkdir");
+        }
+        return 0;
+    }
+    return 1;
+}
+
+/*
+ * given a path of prefix/XX/YY/ZZZZZZZZZZZZZZZ
+ *  ensure that prefix/XX/YY exists
+ */
+static void cache_path_ensure(const char path[PATH_MAX])
+{
+    size_t prelen = 1 + strcspn(path+1, "/");
+    (void) mkdir_n(path, prelen+3);
+    (void) mkdir_n(path, prelen+3+3);
+}
+
+static void cache_set(unsigned char *blob, size_t len)
+{
+    char path[PATH_MAX];
+    MagickWand *cached = NULL;
+
+    if (cache_path(blob, len, path))
+    {
+        FILE *fd;
+
+        cache_path_ensure(path);
+        /* FIXME: need to `mkdir -p` to ensure subdirs exist */
+        fd = fopen(path, "wb");
+        if (fd)
+        {
+            if (fwrite(blob, 1, len, fd) != len)
+            {
+                /* write to an error log...? */
+                perror("fwrite");
+            }
+            fclose(fd);
+        } else {
+            perror("fopen");
+        }
+    }
+}
+
+/*
+ * given an image in a buffer, attempt to locate and retrieve it in our cache.
+ * upon error or the file not being found return NULL
+ */
+static MagickWand * cache_get(imgmin_ctx *ctx)
+{
+    char path[PATH_MAX];
+    MagickWand *cached = NULL;
+
+    if (cache_path(ctx->buffer, ctx->buflen, path))
+    {
+        FILE *fd;
+
+        fd = fopen(path, "rb");
+        if (fd)
+        {
+            cached = NewMagickWand();
+            if (cached)
+            {
+                if (MagickTrue != MagickReadImageFile(cached, fd))
+                {
+                    cached = DestroyMagickWand(cached);
+                }
+            }
+            fclose(fd);
+        } else {
+            perror("fopen");
+        }
+    }
+    return cached;
+}
+
 /*
  * image file blob is in ctx->buffer[0..ctx->buflen)
  * read it into imagemagick, apply imgmin to it and append the resulting blob
@@ -79,29 +190,49 @@ static void magickfree(void *data)
  */
 static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
 {
-    MagickWand *mw = NewMagickWand();
-    MagickReadImageBlob(mw, ctx->buffer, ctx->buflen);
-    /*
-     * FIXME TODO: implement per-file caching via content checksumming
-     */
+    MagickWand *mw;
+    unsigned char *blob;
+    size_t bloblen;
+
+    mw = cache_get(ctx);
+    blob = NULL;
+    bloblen = 0;
+
+    if (mw)
     {
-        MagickWand *tmp = search_quality(mw, "-", &c->opt);
-        size_t newsize = ctx->buflen + 1;
-        unsigned char *blob = MagickGetImageBlob(tmp, &newsize);
-        if (newsize > ctx->buflen)
+        blob = MagickGetImageBlob(mw, &bloblen);
+    } else {
+        /*
+         * not in cache. generate result and save to cache.
+         */
+        MagickWand *tmp;
+        mw = NewMagickWand();
+        MagickReadImageBlob(mw, ctx->buffer, ctx->buflen);
+        tmp = search_quality(mw, "-", &c->opt);
+        blob = MagickGetImageBlob(tmp, &bloblen);
+        /* if result is larger than original fall back */
+        if (bloblen > ctx->buflen)
         {
             (void) MagickRelinquishMemory(blob);
-            blob = MagickGetImageBlob(mw, &newsize);
+            blob = MagickGetImageBlob(mw, &bloblen);
         }
-        {
-            apr_bucket *b = apr_bucket_heap_create((char *)blob,
-                                                   newsize, magickfree,
-                                                   f->c->bucket_alloc);
-            APR_BRIGADE_INSERT_TAIL(ctx->bb, b);
-        }
-        DestroyMagickWand(tmp);
+        /*
+         * if the results aren't from the cache, write to the cache for later use
+         */
+        cache_set(blob, bloblen);
+        tmp = DestroyMagickWand(tmp);
     }
-    DestroyMagickWand(mw);
+    /*
+     *  by this point we've got the contents of our image response in 'blob',
+     *  whether it's a cached image, a new response or the original image.
+     */
+    {
+        apr_bucket *b = apr_bucket_heap_create((char *)blob,
+                                               bloblen, magickfree,
+                                               f->c->bucket_alloc);
+        APR_BRIGADE_INSERT_TAIL(ctx->bb, b);
+    }
+    mw = DestroyMagickWand(mw);
 }
 
 static apr_status_t imgmin_out_filter(ap_filter_t *f,
