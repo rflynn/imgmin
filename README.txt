@@ -1,5 +1,9 @@
 
 $ git clone git@github.com:rflynn/imgmin.git
+$ cd imgmin
+$ make
+$ sudo make install
+$ imgmin original.jpg optimized.jpg
 
 Summary
 
@@ -75,16 +79,16 @@ at a given quality? Is the same image at quality 50 half as large as at 100?
 Here is a chart of the approximate relationship between the visual effect of
 "quality" and the size of the resulting file.
 
- 100% |##*********
-  90% |  ###      ******* Visual Quality
-  80% |     ####         ********
-  70% |         ####             ********
-  60% |             ####                 *******
-  50% |                 ##### File Size         *****
-  40% |                      ######                  ****
-  30% |                            ########              ****
-  20% |                                    ###########       ****
-  10% |                                               ###########****
+ 100% |#*******
+  90% | #      ******* Visual Quality (approximate)
+  80% |  #            ********
+  70% |   #                   ********
+  60% |    ##                         *******
+  50% |      ###                             ******
+  40% |         #####                              ****
+  30% |    File Size ######                            ***
+  20% |                    ################               *****
+  10% |                                    ####################******
    0% +---------------------------------------------------------------
      100    90    80    70     60    50    40     30     20    10    0
 
@@ -118,6 +122,7 @@ Youtube frontpage JPEGs:   70-82
 Wikipedia images:          80
 Windows live background:   82
 Twitter user JPEG images:  30-100, apparently not enforcing quality
+
 
 But for optimal results it is not that simple. Compression results rely heavily
 on the data being compressed. This means that visual quality is not uniform for
@@ -236,6 +241,12 @@ References
      <http://www.impulseadventure.com/photo/jpeg-compression.html>
   12. "Designing a JPEG Decoder & Source Code" ImpulseAdventure.com, Calvin Hass
      <http://www.impulseadventure.com/photo/jpeg-decoder.html>
+  13. "JPEG Compression" Gernot Hoffmann. 18 Sep 2003. Web. 13 Aug 2011
+     <http://www.fho-emden.de/~hoffmann/jpeg131200.pdf>
+  14. "Optimization of JPEG (JPG) images: good quality and small size" Alberto Martinez Perez. 16 Sep 2008. Web. 14 Aug 2011
+     <http://www.ampsoft.net/webdesign-l/jpeg-compression.html>
+  15. "JPEG: Joint Photographic Experts Group"
+     <http://www.cs.auckland.ac.nz/compsci708s1c/lectures/jpeg_mpeg/jpeg.html>
 
 Technical Notes
 ----------------
