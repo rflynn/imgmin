@@ -396,8 +396,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             }
             memcpy(ctx->buffer + ctx->buflen, data, len);
             ctx->buflen += len;
-
-            APR_BUCKET_REMOVE(e);
         }
 
         apr_bucket_delete(e);
