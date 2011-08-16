@@ -238,8 +238,6 @@ static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
     {
         mw = cache_get(path, ctx);
     }
-    blob = NULL;
-    bloblen = 0;
 
     if (mw)
     {
