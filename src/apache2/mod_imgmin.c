@@ -343,13 +343,7 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             /* data is in ctx->buffer, imgmin it, pass results to new
              * brigade ctx->bb */
 
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r,
-                          "pre-do_imgmin buflen: %lu",
-                          (unsigned long)ctx->buflen);
-
             do_imgmin(f, ctx, c);
-
-            ap_log_rerror(APLOG_MARK, APLOG_DEBUG, 0, r, "post do_imgmin");
 
             /* No need for cleanup any longer */
             apr_pool_cleanup_kill(r->pool, ctx, imgmin_ctx_cleanup);
@@ -361,7 +355,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             /* Okay, we've seen the EOS.
              * Time to pass it along down the chain.
              */
-            fprintf(stderr, "%s %u\n", __func__, __LINE__);
             return ap_pass_brigade(f->next, ctx->bb);
         }
 
