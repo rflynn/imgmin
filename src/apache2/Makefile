@@ -3,7 +3,7 @@
 # Reference: http://httpd.apache.org/docs/2.2/programs/apxs.html
 
 mod_imgmin.la: mod_imgmin.c ../imgmin.c
-	apxs2 -I `pwd`/.. `MagickWand-config --cppflags` `MagickWand-config --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -c mod_imgmin.c -c ../imgmin.c
+	apxs2 -I `pwd`/.. `MagickWand-config --cppflags` `MagickWand-config --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -Wc,-W -Wc,-Wall -Wc,-Wno-unused-parameter -c mod_imgmin.c -c ../imgmin.c
 
 install: mod_imgmin.la
 	apxs2 -i -a mod_imgmin.la
