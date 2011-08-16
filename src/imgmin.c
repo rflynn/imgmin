@@ -114,6 +114,8 @@ static double color_density(MagickWand *mw)
 #define min(a,b) ((a) < (b) ? (a) : (b))
 #define max(a,b) ((a) > (b) ? (a) : (b))
 
+
+#ifndef IMGMIN_LIB
 static const char * type2str(const ImageType t)
 {
     return 
@@ -131,6 +133,7 @@ static const char * type2str(const ImageType t)
            t == PaletteBilevelMatteType  ? "PaletteBilevelMatte"  :
            "???";
 }
+#endif
 
 /*
  * given a source image, a destination filepath and a set of image metadata thresholds,
@@ -254,6 +257,38 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
     return tmp;
 }
 
+int imgmin_options_init(struct imgmin_options *opt)
+{
+    /* default initialization */
+    opt->error_threshold     = ERROR_THRESHOLD;
+    opt->color_density_ratio = COLOR_DENSITY_RATIO;
+    opt->min_unique_colors   = MIN_UNIQUE_COLORS;
+    opt->quality_out_max     = QUALITY_OUT_MAX;
+    opt->quality_out_min     = QUALITY_OUT_MIN;
+    opt->quality_in_min      = QUALITY_IN_MIN;
+    opt->max_steps           = MAX_STEPS;
+
+    return 1;
+}
+
+void imgmin_opt_set_error_threshold(
+    struct imgmin_options *opt,
+    const char *arg)
+{
+    opt->error_threshold = strtod(arg, NULL);
+    /* constrain range */
+    if (opt->error_threshold < DBL_EPSILON)
+    {
+        opt->error_threshold = DBL_EPSILON;
+    }
+    else if (opt->error_threshold > 255.0)
+    {
+        opt->error_threshold = 255.0;
+    }
+}
+
+#ifndef IMGMIN_LIB
+
 static void doit(const char *src, const char *dst, size_t oldsize,
                  const struct imgmin_options *opt)
 {
@@ -349,35 +384,6 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     MagickWandTerminus();
 }
 
-int imgmin_options_init(struct imgmin_options *opt)
-{
-    /* default initialization */
-    opt->error_threshold     = ERROR_THRESHOLD;
-    opt->color_density_ratio = COLOR_DENSITY_RATIO;
-    opt->min_unique_colors   = MIN_UNIQUE_COLORS;
-    opt->quality_out_max     = QUALITY_OUT_MAX;
-    opt->quality_out_min     = QUALITY_OUT_MIN;
-    opt->quality_in_min      = QUALITY_IN_MIN;
-    opt->max_steps           = MAX_STEPS;
-
-    return 1;
-}
-
-void imgmin_opt_set_error_threshold(
-    struct imgmin_options *opt,
-    const char *arg)
-{
-    opt->error_threshold = strtod(arg, NULL);
-    /* constrain range */
-    if (opt->error_threshold < DBL_EPSILON)
-    {
-        opt->error_threshold = DBL_EPSILON;
-    }
-    else if (opt->error_threshold > 255.0)
-    {
-        opt->error_threshold = 255.0;
-    }
-}
 
 static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
 {
@@ -432,7 +438,6 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     return i;
 }
 
-#ifndef IMGMIN_LIB
 int main(int argc, char *argv[])
 {
 
