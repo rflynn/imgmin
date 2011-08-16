@@ -9,9 +9,14 @@
 #include "apr_general.h"
 #include "util_filter.h"
 #include "apr_buckets.h"
+#include "apr_md5.h"
 #include "http_request.h"
 #define APR_WANT_STRFUNC
 #include "apr_want.h"
+
+/* mkdir */
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "imgmin.h"
 
@@ -23,6 +28,9 @@ typedef struct {
     struct imgmin_options opt;
     apr_size_t bufferSize;
 } imgmin_filter_config;
+
+/* TODO: make this runtime configurable */
+#define MOD_IMGMIN_CACHE_PREFIX "/var/imgmin-cache"
 
 /*
  * NOTE: we need the entire file in a contiguous buffer (can ImageMagick handle a stream?)
@@ -64,12 +72,112 @@ typedef struct imgmin_ctx_t
 static apr_status_t imgmin_ctx_cleanup(void *data)
 {
     imgmin_ctx *ctx = data;
+    apr_pool_cleanup_null(ctx->buffer);
     return APR_SUCCESS;
 }
 
 static void magickfree(void *data)
 {
     (void) MagickRelinquishMemory(data);
+}
+
+static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
+{
+    unsigned char digest[APR_MD5_DIGESTSIZE];
+    char *result = NULL;
+
+    if (apr_md5(digest, blob, len) == APR_SUCCESS)
+    {
+        int fmt;
+
+        fmt = snprintf(path, PATH_MAX, "%s/%02x/%02x/%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            MOD_IMGMIN_CACHE_PREFIX,
+            digest[0], digest[1], digest[2], digest[3],
+            digest[4], digest[5], digest[6], digest[7],
+            digest[8], digest[9], digest[10], digest[11],
+            digest[12], digest[13], digest[14], digest[15]);
+        if (fmt >= 0 && (size_t)fmt < PATH_MAX)
+        {
+            result = path;
+        }
+    }
+    return result;
+}
+
+static int mkdir_n(const char path[PATH_MAX], size_t len)
+{
+    char tmppath[PATH_MAX];
+
+    strcpy(tmppath, path);
+    tmppath[len] = '\0';
+    fprintf(stderr, "mkdir(%s)\n", tmppath);
+    if (mkdir(tmppath, 0755) != 0)
+    {
+        if (errno != EEXIST)
+        {
+            perror("mkdir");
+        }
+        return 0;
+    }
+    return 1;
+}
+
+/*
+ * given a path of prefix/XX/YY/ZZZZZZZZZZZZZZZ
+ *  ensure that prefix/XX/YY exists
+ */
+static void cache_path_ensure(const char path[PATH_MAX])
+{
+    size_t prelen = strlen(MOD_IMGMIN_CACHE_PREFIX);
+    (void) mkdir_n(path, prelen+3);
+    (void) mkdir_n(path, prelen+3+3);
+}
+
+static void cache_set(const char *path, unsigned char *blob, size_t len)
+{
+    FILE *fd;
+
+    cache_path_ensure(path);
+    fd = fopen(path, "wb");
+    if (!fd)
+    {
+        perror("fopen");
+    } else {
+        if (fwrite(blob, 1, len, fd) != len)
+        {
+            /* write to an error log...? */
+            perror("fwrite");
+        }
+        fclose(fd);
+    }
+}
+
+/*
+ * given an image in a buffer, attempt to locate and retrieve it in our cache.
+ * upon error or the file not being found return NULL
+ */
+static MagickWand * cache_get(const char *path, imgmin_ctx *ctx)
+{
+    MagickWand *cached = NULL;
+    FILE *fd;
+
+    fd = fopen(path, "rb");
+    if (fd)
+    {
+        cached = NewMagickWand();
+        if (cached)
+        {
+            if (MagickTrue != MagickReadImageFile(cached, fd))
+            {
+                perror("MagickReadImageFile");
+                cached = DestroyMagickWand(cached);
+            }
+        } else {
+            perror("NewMagickWand");
+        }
+        fclose(fd);
+    }
+    return cached;
 }
 
 /*
@@ -79,29 +187,54 @@ static void magickfree(void *data)
  */
 static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
 {
-    MagickWand *mw = NewMagickWand();
-    MagickReadImageBlob(mw, ctx->buffer, ctx->buflen);
-    /*
-     * FIXME TODO: implement per-file caching via content checksumming
-     */
+    char path[PATH_MAX];
+    MagickWand *mw;
+    unsigned char *blob;
+    size_t bloblen;
+
+    mw = NULL;
+    if (cache_path(ctx->buffer, ctx->buflen, path))
     {
-        MagickWand *tmp = search_quality(mw, "-", &c->opt);
-        size_t newsize = ctx->buflen + 1;
-        unsigned char *blob = MagickGetImageBlob(tmp, &newsize);
-        if (newsize > ctx->buflen)
+        mw = cache_get(path, ctx);
+    }
+    blob = NULL;
+    bloblen = 0;
+
+    if (mw)
+    {
+        blob = MagickGetImageBlob(mw, &bloblen);
+    } else {
+        /*
+         * not in cache. generate result and save to cache.
+         */
+        MagickWand *tmp;
+        mw = NewMagickWand();
+        MagickReadImageBlob(mw, ctx->buffer, ctx->buflen);
+        tmp = search_quality(mw, "-", &c->opt);
+        blob = MagickGetImageBlob(tmp, &bloblen);
+        /* if result is larger than original fall back */
+        if (bloblen > ctx->buflen)
         {
             (void) MagickRelinquishMemory(blob);
-            blob = MagickGetImageBlob(mw, &newsize);
+            blob = MagickGetImageBlob(mw, &bloblen);
         }
-        {
-            apr_bucket *b = apr_bucket_heap_create((char *)blob,
-                                                   newsize, magickfree,
-                                                   f->c->bucket_alloc);
-            APR_BRIGADE_INSERT_TAIL(ctx->bb, b);
-        }
-        DestroyMagickWand(tmp);
+        /*
+         * if the results aren't from the cache, write to the cache for later use
+         */
+        cache_set(path, blob, bloblen);
+        tmp = DestroyMagickWand(tmp);
     }
-    DestroyMagickWand(mw);
+    /*
+     *  by this point we've got the contents of our image response in 'blob',
+     *  whether it's a cached image, a new response or the original image.
+     */
+    {
+        apr_bucket *b = apr_bucket_heap_create((char *)blob,
+                                               bloblen, magickfree,
+                                               f->c->bucket_alloc);
+        APR_BRIGADE_INSERT_TAIL(ctx->bb, b);
+    }
+    mw = DestroyMagickWand(mw);
 }
 
 static apr_status_t imgmin_out_filter(ap_filter_t *f,
@@ -126,8 +259,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
      * we're in better shape.
      */
     if (!ctx) {
-        char *token;
-        const char *encoding;
 
         /* only work on main request/no subrequests */
         if (r->main != NULL) {
@@ -191,6 +322,7 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             /* Okay, we've seen the EOS.
              * Time to pass it along down the chain.
              */
+            fprintf(stderr, "%s %u\n", __func__, __LINE__);
             return ap_pass_brigade(f->next, ctx->bb);
         }
 
@@ -212,6 +344,7 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             APR_BRIGADE_INSERT_TAIL(ctx->bb, e);
             continue;
         }
+
 
         /* append bucket data to ctx->buffer... */
         {
