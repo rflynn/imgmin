@@ -1,10 +1,9 @@
 /* ex: set ts=4 et: */
-
 /*
- * FIXME: this generates a SIGTERM at some point afterwards.
- * we're clearly doing something wrong, but I still haven't quite
- * figure out the Apache brigade API and memory allocation stuff so
- * I don't know what it is.
+ * IMGMIN Apache2 Module
+ *
+ * Author: Ryan Flynn <parseerror@gmail.com>
+ * http://github.com/rflynn
  */
 
 #include "httpd.h"
@@ -26,7 +25,6 @@
 
 #include "imgmin.h"
 
-static const char imgminFilterName[] = "IMGMIN";
 module AP_MODULE_DECLARE_DATA imgmin_module;
 
 /* per-... ? */
@@ -77,9 +75,6 @@ typedef struct imgmin_ctx_t
 
 static apr_status_t imgmin_ctx_cleanup(void *data)
 {
-#if 0
-    imgmin_ctx *ctx = data;
-#endif
     return APR_SUCCESS;
 }
 
@@ -364,13 +359,16 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             apr_size_t len = 0;
 
             apr_bucket_read(e, &data, &len, APR_BLOCK_READ);
-            if (c->bufferSize - ctx->buflen < len)
+            if (ctx->buflen + len > c->bufferSize)
             {
                 len = c->bufferSize - ctx->buflen;
             }
             memcpy(ctx->buffer + ctx->buflen, data, len);
             ctx->buflen += len;
+
+            APR_BUCKET_REMOVE(e);
         }
+
 
         apr_bucket_delete(e);
     }
@@ -382,16 +380,11 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
 #define PROTO_FLAGS AP_FILTER_PROTO_CHANGE|AP_FILTER_PROTO_CHANGE_LENGTH
 static void register_hooks(apr_pool_t *p)
 {
-    ap_register_output_filter(imgminFilterName, imgmin_out_filter,  NULL, AP_FTYPE_CONTENT_SET);
-    //ap_hook_do_something(my_something_doer, NULL, NULL, APR_HOOK_MIDDLE);
-#if 0
-    ap_register_output_filter("INFLATE",        inflate_out_filter, NULL, AP_FTYPE_RESOURCE-1);
-    ap_register_input_filter(imgminFilterName,  imgmin_in_filter,   NULL, AP_FTYPE_CONTENT_SET);
-#endif
+    ap_register_output_filter("IMGMIN", imgmin_out_filter,  NULL, AP_FTYPE_RESOURCE);
 }
 
 static const command_rec imgmin_filter_cmds[] = {
-    AP_INIT_TAKE1("ImgminErrorThreshold",      imgmin_set_error_threshold, NULL, RSRC_CONF, "See error threshold (0-255.0)"),
+    AP_INIT_TAKE1("ImgminErrorThreshold",      imgmin_set_error_threshold, NULL, RSRC_CONF, "Set error threshold (0-255.0)"),
     {NULL}
 };
 
