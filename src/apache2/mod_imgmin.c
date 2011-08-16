@@ -77,8 +77,9 @@ typedef struct imgmin_ctx_t
 
 static apr_status_t imgmin_ctx_cleanup(void *data)
 {
+#if 0
     imgmin_ctx *ctx = data;
-    apr_pool_cleanup_null(ctx->buffer);
+#endif
     return APR_SUCCESS;
 }
 
