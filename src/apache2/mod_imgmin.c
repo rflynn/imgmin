@@ -378,6 +378,13 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
         }
 
         /* append bucket data to ctx->buffer... */
+        /* TODO: I can avoid the ctx->buffer allocation and copy if I'm less lazy -- since this is intended
+         * for static JPEGs, and since most are reasonable sized, I'm assuming the entire file contents will
+         * come in one data bucket, in which case, if we do NOT receive a second data buckets before we see EOS
+         * we can simply not delete it and retain a pointer to it
+         *
+         * TODO: apr_bucket_read(..., APR_NONBLOCK_READ)
+         */
         {
             const char *data = NULL;
             apr_size_t len = 0;
