@@ -1,5 +1,11 @@
 /* ex: set ts=4 et: */
 
+/*
+ * FIXME: this generates a SIGTERM at some point afterwards.
+ * we're clearly doing something wrong, but I still haven't quite
+ * figure out the Apache brigade API and memory allocation stuff so
+ * I don't know what it is.
+ */
 
 #include "httpd.h"
 #include "http_config.h"
