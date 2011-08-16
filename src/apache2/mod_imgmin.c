@@ -14,6 +14,10 @@
 #define APR_WANT_STRFUNC
 #include "apr_want.h"
 
+/* mkdir */
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "imgmin.h"
 
 static const char imgminFilterName[] = "IMGMIN";
@@ -67,7 +71,9 @@ typedef struct imgmin_ctx_t
 
 static apr_status_t imgmin_ctx_cleanup(void *data)
 {
+#if 0
     imgmin_ctx *ctx = data;
+#endif
     return APR_SUCCESS;
 }
 
@@ -85,10 +91,13 @@ static char * cache_path(unsigned char *blob, size_t len, char path[PATH_MAX])
     {
         int fmt;
 
-        fmt = snprintf(path, sizeof path, "%s/%c%c/%c%c/%s",
-            MOD_IMGMIN_CACHE_PREFIX, digest[0], digest[1],
-            digest[2], digest[3], digest+4);
-        if (fmt >= 0 && fmt < sizeof path)
+        fmt = snprintf(path, PATH_MAX, "%s/%02x/%02x/%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            MOD_IMGMIN_CACHE_PREFIX,
+            digest[0], digest[1], digest[2], digest[3],
+            digest[4], digest[5], digest[6], digest[7],
+            digest[8], digest[9], digest[10], digest[11],
+            digest[12], digest[13], digest[14], digest[15]);
+        if (fmt >= 0 && (size_t)fmt < PATH_MAX)
         {
             result = path;
         }
@@ -103,7 +112,7 @@ static int mkdir_n(const char path[PATH_MAX], size_t len)
     strcpy(tmppath, path);
     tmppath[len] = '\0';
     fprintf(stderr, "mkdir(%s)\n", tmppath);
-    if (mkdir(tmppath, 0644) != 0)
+    if (mkdir(tmppath, 0755) != 0)
     {
         if (errno != EEXIST)
         {
@@ -120,34 +129,27 @@ static int mkdir_n(const char path[PATH_MAX], size_t len)
  */
 static void cache_path_ensure(const char path[PATH_MAX])
 {
-    size_t prelen = 1 + strcspn(path+1, "/");
+    size_t prelen = strlen(MOD_IMGMIN_CACHE_PREFIX);
     (void) mkdir_n(path, prelen+3);
     (void) mkdir_n(path, prelen+3+3);
 }
 
-static void cache_set(unsigned char *blob, size_t len)
+static void cache_set(const char *path, unsigned char *blob, size_t len)
 {
-    char path[PATH_MAX];
-    MagickWand *cached = NULL;
+    FILE *fd;
 
-    if (cache_path(blob, len, path))
+    cache_path_ensure(path);
+    fd = fopen(path, "wb");
+    if (!fd)
     {
-        FILE *fd;
-
-        cache_path_ensure(path);
-        /* FIXME: need to `mkdir -p` to ensure subdirs exist */
-        fd = fopen(path, "wb");
-        if (fd)
+        perror("fopen");
+    } else {
+        if (fwrite(blob, 1, len, fd) != len)
         {
-            if (fwrite(blob, 1, len, fd) != len)
-            {
-                /* write to an error log...? */
-                perror("fwrite");
-            }
-            fclose(fd);
-        } else {
-            perror("fopen");
+            /* write to an error log...? */
+            perror("fwrite");
         }
+        fclose(fd);
     }
 }
 
@@ -155,30 +157,28 @@ static void cache_set(unsigned char *blob, size_t len)
  * given an image in a buffer, attempt to locate and retrieve it in our cache.
  * upon error or the file not being found return NULL
  */
-static MagickWand * cache_get(imgmin_ctx *ctx)
+static MagickWand * cache_get(const char *path, imgmin_ctx *ctx)
 {
-    char path[PATH_MAX];
     MagickWand *cached = NULL;
+    FILE *fd;
 
-    if (cache_path(ctx->buffer, ctx->buflen, path))
+    fd = fopen(path, "rb");
+    if (!fd)
     {
-        FILE *fd;
-
-        fd = fopen(path, "rb");
-        if (fd)
+        perror("cache_get fopen");
+    } else {
+        cached = NewMagickWand();
+        if (cached)
         {
-            cached = NewMagickWand();
-            if (cached)
+            if (MagickTrue != MagickReadImageFile(cached, fd))
             {
-                if (MagickTrue != MagickReadImageFile(cached, fd))
-                {
-                    cached = DestroyMagickWand(cached);
-                }
+                perror("MagickReadImageFile");
+                cached = DestroyMagickWand(cached);
             }
-            fclose(fd);
         } else {
-            perror("fopen");
+            perror("MagickReadImageFile");
         }
+        fclose(fd);
     }
     return cached;
 }
@@ -190,11 +190,16 @@ static MagickWand * cache_get(imgmin_ctx *ctx)
  */
 static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
 {
+    char path[PATH_MAX];
     MagickWand *mw;
     unsigned char *blob;
     size_t bloblen;
 
-    mw = cache_get(ctx);
+    mw = NULL;
+    if (cache_path(ctx->buffer, ctx->buflen, path))
+    {
+        mw = cache_get(path, ctx);
+    }
     blob = NULL;
     bloblen = 0;
 
@@ -219,7 +224,7 @@ static void do_imgmin(ap_filter_t *f, imgmin_ctx *ctx, imgmin_filter_config *c)
         /*
          * if the results aren't from the cache, write to the cache for later use
          */
-        cache_set(blob, bloblen);
+        cache_set(path, blob, bloblen);
         tmp = DestroyMagickWand(tmp);
     }
     /*
@@ -257,8 +262,6 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
      * we're in better shape.
      */
     if (!ctx) {
-        char *token;
-        const char *encoding;
 
         /* only work on main request/no subrequests */
         if (r->main != NULL) {
@@ -322,6 +325,7 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             /* Okay, we've seen the EOS.
              * Time to pass it along down the chain.
              */
+            fprintf(stderr, "%s %u\n", __func__, __LINE__);
             return ap_pass_brigade(f->next, ctx->bb);
         }
 
@@ -343,6 +347,7 @@ static apr_status_t imgmin_out_filter(ap_filter_t *f,
             APR_BRIGADE_INSERT_TAIL(ctx->bb, e);
             continue;
         }
+
 
         /* append bucket data to ctx->buffer... */
         {
