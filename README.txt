@@ -155,7 +155,7 @@ gallery. Along with each image version I included several statistical measures
 available from the image processing library, and a pattern emerged.
 
 Given a high quality original image, apparent visual quality began to diminish
-noticably when mean pixel error rate exceeded 1 standard deviation.
+noticably when mean pixel error rate exceeded 1.0.
 
 This metric measures the amount of change, on average, each pixel in the new
 image is from the original. Specifically, JPEGs break image data into 8x8 pixel
@@ -167,20 +167,20 @@ pixelated the image becomes.
 The change in pixel error rate is not directly related to the quality setting,
 again, an image's ultimate fate lies in its data; some images degrade rapidly
 within a 1 or 2 quality steps, while others compress with little visible
-difference from qualty 95 to quality 50.
+difference from quality 95 to quality 50.
 
 
 Automating the Process
 
 Given the aforementioned observation of high-quality images looking similar
-within a mean pixel error rate of 1σ, the method of determining an optimal
+within a mean pixel error rate of 1.0, the method of determining an optimal
 quality setting for any given JPEG is clear: generate versions of an image at
 multiple different quality settings, and find the version with the mean pixel
-error rate nearest to but not exceeding 1σ.
+error rate nearest to but not exceeding 1.0.
 
 Using quality bounds of [95, 50] we perform a binary search of the quality
 space, converging on the lowest quality setting that produces a mean pixel
-error rate of < 1σ.
+error rate of < 1.0.
 
 For general-purpose photographic images with high color counts the above method
 yields good results in tests.
@@ -189,7 +189,7 @@ yields good results in tests.
 Limitations
 
 One notable exception is in low color JPEG images, such as gradients and low-
-contrast patterns used in backgrounds. The results at ~1σ are often unacceptably
+contrast patterns used in backgrounds. The results at ~1.0 are often unacceptably
 pixelated. Our image-wide statistical measure is not "smart" enough to catch
 this, so currently images with < 4096 colors are passed through unchanged.
 For reference the "google" logo on google.com contains 6438 colors. In practice
