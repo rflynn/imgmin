@@ -251,6 +251,11 @@ References
 Technical Notes
 ----------------
 
+License
+
+    This software is licensed under the MIT license.
+    See LICENSE-MIT.txt and/or http://www.opensource.org/licenses/mit-license.php
+
 Installation
 
     Prerequisites
