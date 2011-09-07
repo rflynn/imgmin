@@ -231,9 +231,15 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             } else {
                 qmax = q;
             }
-            fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
+            if (opt->show_progress)
+            {
+                fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
+            }
         }
-        putc('\n', stderr);
+        if (opt->show_progress)
+        {
+            putc('\n', stderr);
+        }
 
         MagickSetImageCompressionQuality(mw, qmax);
 
@@ -267,6 +273,7 @@ int imgmin_options_init(struct imgmin_options *opt)
     opt->quality_out_min     = QUALITY_OUT_MIN;
     opt->quality_in_min      = QUALITY_IN_MIN;
     opt->max_steps           = MAX_STEPS;
+    opt->show_progress       = 0;
 
     return 1;
 }
@@ -475,6 +482,8 @@ int main(int argc, char *argv[])
         }
         oldsize = (size_t)st.st_size;
     }
+
+    opt.show_progress = 1;
 
     doit(src, dst, oldsize, &opt);
 

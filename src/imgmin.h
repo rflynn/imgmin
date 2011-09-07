@@ -14,7 +14,8 @@ struct imgmin_options
              quality_out_max,
              quality_out_min,
              quality_in_min,
-             max_steps;
+             max_steps,
+             show_progress;
 };
 
 int imgmin_options_init(struct imgmin_options *opt);
