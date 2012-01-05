@@ -1,4 +1,3 @@
-
 $ git clone git@github.com:rflynn/imgmin.git
 $ cd imgmin
 $ make
@@ -261,7 +260,7 @@ Installation
     Prerequisites
 
     On Ubuntu Linux via apt-get:
-    $ sudo apt-get install imagemagick libgraphicsmagick1-dev perlmagick apache2-prefork-dev
+    $ sudo apt-get install imagemagick libgraphicsmagick1-dev libmagickwand-dev perlmagick apache2-prefork-dev
 
     On Redhat Linux via yum:
     $ sudo yum install Imagemagick ImageMagick-devel Perlmagick apache2-devel
