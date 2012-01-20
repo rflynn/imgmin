@@ -2,9 +2,11 @@ Get Started!
 
 $ git clone git@github.com:rflynn/imgmin.git
 $ cd imgmin
+$ git checkout -b autoconf origin/autoconf # temporarily needed for autoconf branch
 $ autoreconf -fi
 $ ./configure
 $ make
+# If you are missing any libraries see "Installation" at the bottom for "Prerequisites"
 $ sudo make install
 $ imgmin original.jpg optimized.jpg
 
