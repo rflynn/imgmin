@@ -7,7 +7,7 @@ mod_imgmin_la_SOURCES = mod_imgmin.c ../imgmin.c
 
 mod_imgmin_la:
 	if [ "$(APXS)" != "" ]; then \
-		$(APXS) -I `pwd`/.. `MagickWand-config --cppflags` `MagickWand-config --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -Wc,-W -Wc,-Wall -Wc,-Wno-unused-parameter -c mod_imgmin.c -c ../imgmin.c; \
+		$(APXS) -I `pwd`/.. `$(MAGICK_CONFIG) --cppflags --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -Wc,-W -Wc,-Wall -Wc,-Wno-unused-parameter -c mod_imgmin.c -c ../imgmin.c; \
 	fi
 
 install-exec-local: mod_imgmin_la

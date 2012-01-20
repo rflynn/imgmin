@@ -17,6 +17,7 @@ AC_PROG_CC
 AC_CHECK_LIB([m], [log])
 # check for imagemagick
 PKG_CHECK_MODULES([MagickWand], [MagickWand])
+AC_CHECK_PROGS(MAGICK_CONFIG, MagickWand-config Magick-config, "")
 
 # check for apache's apxs/apxs2 tool...
 AC_CHECK_PROGS(APXS, apxs2 apxs, "")
