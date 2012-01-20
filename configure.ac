@@ -5,8 +5,7 @@ AC_PREREQ([2.68])
 AC_INIT([imgmin], [0.7], [https://github.com/rflynn/imgmin/issues])
 AC_CONFIG_SRCDIR([src/imgmin.c])
 
-# FIXME: is this supposed to exist or not? and in what form? everything i read tells me something different
-#AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([imgmin], [0.7])
 
 AC_CONFIG_HEADERS([config.h])
 
