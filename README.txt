@@ -284,13 +284,13 @@ Installation
 
 Example use
 
-$ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
+$ imgmin examples/afghan-girl.jpg examples/afghan-girl-after.jpg
 Before quality:85 colors:44958 size: 58.8KB type:TrueColor 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
 After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
 
 # on a single-core Intel Xeon server
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+$ time imgmin examples/lena1.jpg examples/lena1-after.jpg
 Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
 After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
 
@@ -300,7 +300,7 @@ sys     0m0.941s
 
 # on my dual-core laptop
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+$ time imgmin examples/lena1.jpg examples/lena1-after.jpg
 Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
 After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
 
