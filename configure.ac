@@ -16,7 +16,9 @@ AC_PROG_CC
 # check for -lm
 AC_CHECK_LIB([m], [log])
 # check for imagemagick
-PKG_CHECK_MODULES([MagickWand], [MagickWand])
+# don't bother checking directly for the lib, it is called MagickWand on Ubuntu but 'Wand' on Redhat,
+# instead just find MAGICK_CONFIG
+#PKG_CHECK_MODULES([MagickWand], [MagickWand])
 AC_CHECK_PROGS(MAGICK_CONFIG, MagickWand-config Magick-config, "")
 
 # check for apache's apxs/apxs2 tool...
