@@ -1,5 +1,9 @@
+Get Started!
+
 $ git clone git@github.com:rflynn/imgmin.git
 $ cd imgmin
+$ autoreconf -fi
+$ ./configure
 $ make
 $ sudo make install
 $ imgmin original.jpg optimized.jpg
