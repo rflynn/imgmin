@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.68])
+AC_PREREQ([2.59])
 AC_INIT([imgmin], [0.7], [https://github.com/rflynn/imgmin/issues])
 AC_CONFIG_SRCDIR([src/imgmin.c])
 
@@ -25,7 +25,8 @@ AC_CHECK_HEADERS([fcntl.h float.h stdlib.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
+# works for autoconf v2.68 but not v2.59
+#AC_TYPE_SSIZE_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
