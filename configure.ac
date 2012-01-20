@@ -13,9 +13,10 @@ AC_CONFIG_HEADERS([config.h])
 AC_PROG_CC
 
 # Checks for libraries.
-# check for imagemagick
+# check for -lm
 AC_CHECK_LIB([m], [log])
-AC_CHECK_LIB([MagickWand], [NewMagickWand])
+# check for imagemagick
+PKG_CHECK_MODULES([MagickWand], [MagickWand])
 
 # check for apache's apxs/apxs2 tool...
 AC_CHECK_PROGS(APXS, apxs2 apxs, "")
