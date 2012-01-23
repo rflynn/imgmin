@@ -267,7 +267,7 @@ Installation
 
     On Unix via source:
     $ cd /usr/local/src                                                # source directory of choice
-    $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-6.7.1-3.tar.gz
+    $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick.tar.gz
     $ sudo gzip -dc ImageMagick-6.7.1-3.tar.gz | sudo tar xvf -        # extract
     $ cd ImageMagick-6.7.1-3                                           # change dir
     $ sudo ./configure                                                 # configure
