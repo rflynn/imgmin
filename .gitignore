@@ -1,0 +1,9 @@
+
+# autotools crap
+autom4te.cache
+autoscan.log
+
+# intermediate build stuff
+*.lo
+*.slo
+
