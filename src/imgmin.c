@@ -165,13 +165,13 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
      */
     if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
     {
-        fprintf(stderr, " Color count is too low, skipping...\n");
+        fprintf(stdout, " Color count is too low, skipping...\n");
         return CloneMagickWand(mw);
     }
 
     if (quality(mw) < opt->quality_in_min)
     {
-        fprintf(stderr, " Quality < %u, won't second-guess...\n", opt->quality_in_min);
+        fprintf(stdout, " Quality < %u, won't second-guess...\n", opt->quality_in_min);
         return CloneMagickWand(mw);
     }
 
@@ -233,12 +233,12 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             }
             if (opt->show_progress)
             {
-                fprintf(stderr, "%.2f/%.2f@%u ", error, density_ratio, q);
+                fprintf(stdout, "%.2f/%.2f@%u ", error, density_ratio, q);
             }
         }
         if (opt->show_progress)
         {
-            putc('\n', stderr);
+            putc('\n', stdout);
         }
 
         MagickSetImageCompressionQuality(mw, qmax);
@@ -330,7 +330,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
  
     ks = oldsize / 1024.;
 
-    fprintf(stderr,
+    fprintf(stdout,
         "Before quality:%lu colors:%lu size:%5.1fkB type:%s ",
         quality(mw),
         (unsigned long)unique_colors(mw),
@@ -378,7 +378,7 @@ static void doit(const char *src, const char *dst, size_t oldsize,
         double ksave = ks - kd;
         double kpct = ksave * 100. / ks;
 
-        fprintf(stderr,
+        fprintf(stdout,
             "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
             (unsigned long)quality(tmp),
             (unsigned long)unique_colors(tmp),
@@ -460,6 +460,8 @@ int main(int argc, char *argv[])
     }
     src = argv[argc_off];
     dst = argv[argc_off+1];
+
+    setvbuf(stdout, NULL, _IONBF, 0);
 
     if (strlen(src) > MAX_PATH)
     {
