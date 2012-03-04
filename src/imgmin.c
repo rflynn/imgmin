@@ -130,8 +130,17 @@ static const char * type2str(const ImageType t)
            t == ColorSeparationType      ? "ColorSeparation"      :
            t == ColorSeparationMatteType ? "ColorSeparationMatte" :
            t == OptimizeType             ? "Optimize"             :
+#if MagickLibVersion <= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
            t == PaletteBilevelMatteType  ? "PaletteBilevelMatte"  :
+#endif
            "???";
+}
+#endif
+
+#if MagickLibVersion <= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
+static ImageType MagickGetType(MagickWand *wand)
+{
+    return UndefinedType;
 }
 #endif
 
@@ -213,7 +222,11 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
              */
             (void) GetImageDistortion(GetImageFromMagickWand(tmp),
                                       GetImageFromMagickWand(mw),
+#if MagickLibVersion < 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
+                                      MeanAbsoluteErrorMetric,
+#else
                                       MeanErrorPerPixelMetric,
+#endif
                                       distortion,
                                       exception);
             /* FIXME: in perlmagick i was getting back a number [0,255.0],
@@ -247,7 +260,9 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
          * small areas of colour. It gives a significant reduction in file sizes, with
          * little loss of perceived quality." [3]
          */
+#if MagickLibVersion >= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
         (void) MagickSetImageProperty(mw, "jpeg:sampling-factor", "2x2");
+#endif
 
         /* strip an image of all profiles and comments */
         (void) MagickStripImage(mw);
