@@ -23,7 +23,9 @@
 #include <string.h>
 #include <math.h>
 #include <float.h> /* DBL_EPSILON */
+#include <wand/MagickWand.h>
 #include "imgmin.h"
+
 
 /* TODO: this is defined in the ImageMagick header magick/magick-type.h */
 #ifndef CompositeChannels
@@ -263,6 +265,92 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
     return tmp;
 }
 
+struct filesize
+{
+    char path[MAX_PATH+1];
+    off_t bytes; 
+};
+
+/*
+ * run 'cmd'; if it succeeds then store path and its filesize in fs
+ */
+static int do_png_cmd(const char *cmd, const char *path, struct filesize *fs)
+{
+    int ok = 0;
+    if (!system(cmd))
+    {
+        struct stat st;
+        if (!stat(path, &st))
+        {
+            strcpy(fs->path, path);
+            fs->bytes = st.st_size;
+            ok = 1;
+        }
+    }
+    return ok;
+}
+
+/*
+ * special handling for PNGs
+ * there exist many high-quality PNG optimization tools; if they exist then leverage them
+ */
+MagickWand * do_png(MagickWand *mw, const char *src, const char *dst,
+                    const struct imgmin_options *opt)
+{
+    char cmd[MAX_PATH*2+64];
+    char out[MAX_PATH+1];
+    struct filesize files[4];
+    int filecnt = 0;
+    int srcnamelen = max(0, (int)(strlen(src) - 4)); /* {foo}.png */
+    const char *srcext = src + srcnamelen; /* foo{.png} */
+
+    if (!system("which cp"))
+    {
+        snprintf(cmd, sizeof cmd, "cp \"%s\" \"%s\"", src, dst);
+        filecnt += do_png_cmd(cmd, dst, files + filecnt);
+    }
+
+    if (!system("which pngnq"))
+    {
+        snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
+        snprintf(cmd, sizeof cmd, "pngnq \"%s\"", src);
+        filecnt += do_png_cmd(cmd, out, files + filecnt);
+    }
+
+    if (!system("which pngquant"))
+    {
+        snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
+        snprintf(cmd, sizeof cmd, "pngquant 256 \"%s\"", src);
+        filecnt += do_png_cmd(cmd, out, files + filecnt);
+    }
+
+    {
+        int i, smalli=0;
+        for (i = 1; i < filecnt; i++)
+        {
+            if (files[i].bytes < files[smalli].bytes)
+            {
+                smalli = i;
+#if 0
+            } else {
+                snprintf(cmd, sizeof cmd, "rm -f \"%s\"", files[i].path);
+                if (system(cmd))
+                    perror("rm");
+#endif
+            }
+        }
+        files[0] = files[smalli];
+    }
+
+    printf("files[0]=\"%s\"\n", files[0].path);
+
+    {
+        MagickWand *r = NewMagickWand();
+        MagickReadImage(r, files[0].path);
+        return r;
+    }
+}
+
 int imgmin_options_init(struct imgmin_options *opt)
 {
     /* default initialization */
@@ -331,12 +419,18 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     ks = oldsize / 1024.;
 
     fprintf(stdout,
-        "Before quality:%lu colors:%lu size:%5.1fkB type:%s ",
+        "Before quality:%lu colors:%lu size:%5.1fkB type:%s format:%s ",
         quality(mw),
         (unsigned long)unique_colors(mw),
-        ks, type2str(MagickGetImageType(mw)));
+        ks, type2str(MagickGetImageType(mw)),
+	MagickGetImageFormat(mw));
 
-    tmp = search_quality(mw, dst, opt);
+    if (strcmp("-", src) && !strcmp("PNG", MagickGetImageFormat(mw)))
+    {
+        tmp = do_png(mw, src, dst, opt);
+    } else {
+        tmp = search_quality(mw, dst, opt);
+    }
 
     /* output image... */
     {
@@ -443,6 +537,20 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
         }
     }
     return i;
+
+}
+
+static void help(void)
+{
+	printf(
+    	" --error-threshold 1.0\n"
+    	" --color-density-ratio ?\n"
+    	" --min-unique-colors N\n"
+    	" --quality-out-max N\n"
+    	" --quality-out-min N\n"
+    	" --quality-in-min N\n"
+    	" --max-steps N\n"
+	);
 }
 
 int main(int argc, char *argv[])
