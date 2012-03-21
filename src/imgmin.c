@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -267,23 +268,50 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
 
 struct filesize
 {
+    char tool[64];
     char path[MAX_PATH+1];
     off_t bytes; 
 };
 
+static off_t getfilesize(const char *path)
+{
+
+    struct stat st;
+    if (stat(path, &st) < 0)
+    {
+        perror("stat");
+        st.st_size = (off_t)-1;
+    }
+    return st.st_size;
+}
+
 /*
  * run 'cmd'; if it succeeds then store path and its filesize in fs
  */
-static int do_png_cmd(const char *cmd, const char *path, struct filesize *fs)
+static int do_png_cmd2(const char *cmd, char * const argv[], const char *outpath, struct filesize *fs)
 {
     int ok = 0;
-    if (!system(cmd))
-    {
-        struct stat st;
-        if (!stat(path, &st))
-        {
-            strcpy(fs->path, path);
-            fs->bytes = st.st_size;
+    pid_t pid;
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+    } else if (pid == 0) {
+        close(2);
+        close(1);
+        if (execvp(cmd, argv) != 0) {
+            perror(cmd);
+            exit(1);
+        } else {
+            exit(0);
+        }
+    } else {
+        int status = 0;
+        if (waitpid(pid, &status, 0) < 0) {
+            perror("waitpid");
+        } else {
+            strcpy(fs->tool, cmd);
+            strcpy(fs->path, outpath);
+            fs->bytes = getfilesize(outpath);
             ok = 1;
         }
     }
@@ -294,61 +322,80 @@ static int do_png_cmd(const char *cmd, const char *path, struct filesize *fs)
  * special handling for PNGs
  * there exist many high-quality PNG optimization tools; if they exist then leverage them
  */
-MagickWand * do_png(MagickWand *mw, const char *src, const char *dst,
+static void do_png(MagickWand *mw, const char *src, const char *dst,
                     const struct imgmin_options *opt)
 {
-    char cmd[MAX_PATH*2+64];
     char out[MAX_PATH+1];
-    struct filesize files[4];
+    struct filesize files[8];
     int filecnt = 0;
     int srcnamelen = max(0, (int)(strlen(src) - 4)); /* {foo}.png */
     const char *srcext = src + srcnamelen; /* foo{.png} */
 
-    if (!system("which cp"))
-    {
-        snprintf(cmd, sizeof cmd, "cp \"%s\" \"%s\"", src, dst);
-        filecnt += do_png_cmd(cmd, dst, files + filecnt);
-    }
+    /* our fallback is the unchanged file itself */
+    strcpy(files[0].tool, "none");
+    strcpy(files[0].path, src);
+    files[0].bytes = getfilesize(src);
+    filecnt = 1;
 
-    if (!system("which pngnq"))
+    fputc('\n', stderr);
+
+    /* if we find other well-known png optimizers, try them and record their results in files[] */
+
+    if (!system("which pngnq 2>&1 >/dev/null"))
     {
+        char * const argv[] = { "pngnq", "-f", src, NULL };
         snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
-        snprintf(cmd, sizeof cmd, "pngnq \"%s\"", src);
-        filecnt += do_png_cmd(cmd, out, files + filecnt);
+        filecnt += do_png_cmd2("pngnq", argv, out, files + filecnt);
     }
 
-    if (!system("which pngquant"))
+    if (!system("which pngcrush 2>&1 >/dev/null"))
     {
+        char * const argv[] = { "pngcrush", "-force", src, out, NULL };
+        snprintf(out, sizeof out, "%.*s-pngcrush%s", srcnamelen, src, srcext);
+        filecnt += do_png_cmd2("pngcrush", argv, out, files + filecnt);
+    }
+
+    if (!system("which pngquant 2>&1 >/dev/null"))
+    {
+        char * const argv[] = { "pngquant", "-force", "256", src, NULL };
         snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
-        snprintf(cmd, sizeof cmd, "pngquant 256 \"%s\"", src);
-        filecnt += do_png_cmd(cmd, out, files + filecnt);
+        filecnt += do_png_cmd2("pngquant", argv, out, files + filecnt);
     }
 
+    /* find the smallest of all output files[] */
     {
-        int i, smalli=0;
+        int i, smalli = 0;
         for (i = 1; i < filecnt; i++)
         {
+            fprintf(stderr, " %.1fk@%s", files[i].bytes / 1024.0, files[i].tool);
             if (files[i].bytes < files[smalli].bytes)
-            {
                 smalli = i;
-#if 0
-            } else {
-                snprintf(cmd, sizeof cmd, "rm -f \"%s\"", files[i].path);
-                if (system(cmd))
-                    perror("rm");
-#endif
-            }
         }
         files[0] = files[smalli];
     }
 
-    printf("files[0]=\"%s\"\n", files[0].path);
-
+    /* cp the smallest resulting file to dst */
+    fprintf(stderr, "\nUsing %s %4.1fk...\n", files[0].tool, files[0].bytes / 1024.0);
     {
-        MagickWand *r = NewMagickWand();
-        MagickReadImage(r, files[0].path);
-        return r;
+        char * const argv[] = { "cp", files[0].path, dst, NULL };
+        (void) do_png_cmd2("cp", argv, dst, files);
     }
+
+    /* clean up intermediate files (but don't nuke src or dst!) */
+    {
+        char rmpath[MAX_PATH+1];
+        char * const argv[] = { "rm", rmpath, NULL};
+        int i;
+        for (i = 1; i < filecnt; i++)
+        {
+            if (strcmp(files[i].path, dst) != 0)
+            {
+                strcpy(rmpath, files[i].path);
+                (void) do_png_cmd2("rm", argv, dst, files);
+            }
+        }
+    }
+
 }
 
 int imgmin_options_init(struct imgmin_options *opt)
@@ -427,7 +474,8 @@ static void doit(const char *src, const char *dst, size_t oldsize,
 
     if (strcmp("-", src) && !strcmp("PNG", MagickGetImageFormat(mw)))
     {
-        tmp = do_png(mw, src, dst, opt);
+        do_png(mw, src, dst, opt);
+        return;
     } else {
         tmp = search_quality(mw, dst, opt);
     }
