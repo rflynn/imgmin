@@ -27,6 +27,9 @@
 #include <wand/MagickWand.h>
 #include "imgmin.h"
 
+#ifndef IMGMIN_LIB /* not the Apache mopdule... (we assume cmdline) */
+#define IMGMIN_STANDALONE
+#endif
 
 /* TODO: this is defined in the ImageMagick header magick/magick-type.h */
 #ifndef CompositeChannels
@@ -472,13 +475,21 @@ static void doit(const char *src, const char *dst, size_t oldsize,
         ks, type2str(MagickGetImageType(mw)),
 	MagickGetImageFormat(mw));
 
+#ifdef IMGMIN_STANDALONE
+/*
+ * NOTE: for now only allow use of external PNG tools in a standalone cmdline app,
+ * not the built-in apache -- it's slower and less trustworthy.
+ */
     if (strcmp("-", src) && !strcmp("PNG", MagickGetImageFormat(mw)))
     {
         do_png(mw, src, dst, opt);
         return;
     } else {
+#endif
         tmp = search_quality(mw, dst, opt);
+#ifdef IMGMIN_STANDALONE
     }
+#endif
 
     /* output image... */
     {
