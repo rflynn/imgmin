@@ -10,14 +10,14 @@ $ imgmin original.jpg optimized.jpg
 
 Summary
 
-    JPEG image files constitute a significant minority of total web
-    traffic. JPEGs are binary files that do not benefit from existing
-    standard (gzip) compression.
-    Imgmin applies established best practices and statistical means to
-    automatically optimize JPEG filesize for each unique image without
-    sacrificing quality, resulting in significant site-wide latency
-    reduction and bandwidth savings which improves user experience and
-    saves money.
+    Image files constitute a majority of total web traffic.[17]
+    Unlike text-based web file formats, binary image files do not benefit from built-in HTTP compression.
+    imgmin offers a standard interface for enforcing image quality
+    as a standalone tool and as a webserver module.
+    imgmin determines the optimal balance of image quality and filesize,
+    often greatly reducing image size while retaining quality for
+    casual use, which translates into more efficient use of storage
+    and network bandwidth, which saves money and improve user experience.
 
 
 The Problem
@@ -31,29 +31,20 @@ Websites are composed of several standard components.
 
 All but one of these component types are text-based. Text files can be
 automatically compressed by a webserver using gzip, which is supported by all
-major browsers.
+major webservers and browsers.
 
 Most web traffic consists of image file downloads, specifically JPEG images.
+JPEG files use so much bandwidth that Google has tried improving them by
+introducing an alternative format[16].
 JPEG images are not compressed by the webserver because JPEG is a binary format
 which does not compress well because it includes its own built-in compression,
 and generally it is up to the people creating the images to select an appropriate
-compression setting.  Compression and image quality are inversely proportional.
-The JPEG quality settings most used by graphics professional tend to be highly
-conservative, for several reasons.
+compression setting when the file is saved.  
 
-Firstly, JPEG is a "lossy" file format; once the quality/compression level has
-been applied to an image and saved, information can be lost. Visible quality
-errors (known as "artifacts") accumulate with repeated edits, so it is in
-graphical best interests to choose a very high quality setting in case a
-future edit is necessary.
-
-Secondly, graphics people tend to think of file sizes differently than backend
-web and network engineers. They are used to dealing with bitmapped files
-in the 100MBs range; a 100K JPEG file, at 1/10 of 1MB, does not seem large in
-comparison.
-
-Lastly, many graphics people tend to value their work and are generally
-hesitant to introduce any artifact, no matter how insignificant.
+The JPEG quality settings most used by graphics professionals tend to be highly
+conservative because Compression and image quality are inversely proportional
+and graphics people are interested in utmost visual quality and not in spending
+time worrying about network efficiency.
 
 The result of overly conservative JPEG compression and webservers' inability
 to compress them any further means that many images on the web are too large.
@@ -250,6 +241,10 @@ References
      <http://www.ampsoft.net/webdesign-l/jpeg-compression.html>
   15. "JPEG: Joint Photographic Experts Group"
      <http://www.cs.auckland.ac.nz/compsci708s1c/lectures/jpeg_mpeg/jpeg.html>
+  16. "WebP: A new image format for the Web", Google, 2012. Web. 31 Jan 2012.
+     <http://code.google.com/speed/webp/>
+  17 "New WebP Image Format Could Send JPEG Packing", Rob Spiegel, 10 Oct 2010. Web. 31 Jan 2012
+     <http://www.technewsworld.com/story/New-WebP-Image-Format-Could-Send-JPEG-Packing-70945.html>
 
 Technical Notes
 ----------------
