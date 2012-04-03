@@ -11,13 +11,14 @@ $ imgmin original.jpg optimized.jpg
 Summary
 
     Image files constitute a majority of total web traffic.[17]
-    Unlike text-based web file formats, binary image files do not benefit from built-in HTTP compression.
-    imgmin offers a standard interface for enforcing image quality
-    as a standalone tool and as a webserver module.
-    imgmin determines the optimal balance of image quality and filesize,
-    often greatly reducing image size while retaining quality for
-    casual use, which translates into more efficient use of storage
-    and network bandwidth, which saves money and improve user experience.
+    Unlike text-based web file formats, binary image files do not benefit from
+    webserver-based HTTP gzip compression.
+    imgmin offers a standard interface for enforcing image quality as a
+    standalone tool and as a webserver module.
+    imgmin determines the optimal balance of image quality and filesize, often
+    greatly reducing image size while retaining quality for casual use, which
+    translates into more efficient use of storage and network bandwidth, which
+    saves money and improve user experience.
 
 
 The Problem
