@@ -27,7 +27,7 @@ Websites are composed of several standard components.
     HTML describes overall page content and organization
     CSS describes specific page layout and style
     Javascript allows interactive client-side programming
-    XML is used for data exchange such as RSS feeds
+    XML and JSON are used for data exchange
     JPEG is a file format for photo-realistic images
 
 All but one of these component types are text-based. Text files can be
@@ -54,6 +54,9 @@ pages contain dozens of JPEG images.
 
 These bloated images take longer to transfer, leading to extended load time,
 which does not produce a good viewer experience. People hate to wait.
+
+In order to understand how to optimize JPEGs for size first we must learn more
+about the JPEG format.
 
 
 "Quality" Details
@@ -147,7 +150,7 @@ a human choose the lowest quality version of the image of acceptable quality.
 
 I proceded in this way for a variety of images, producing an interactive image
 gallery. Along with each image version I included several statistical measures
-available from the image processing library, and a pattern emerged.
+available from the image processing library and a pattern emerged.
 
 Given a high quality original image, apparent visual quality began to diminish
 noticably when mean pixel error rate exceeded 1.0.
@@ -155,9 +158,10 @@ noticably when mean pixel error rate exceeded 1.0.
 This metric measures the amount of change, on average, each pixel in the new
 image is from the original. Specifically, JPEGs break image data into 8x8 pixel
 blocks. The quality setting controls the amount of information available
-to encoded quantized color and brightness information about block. The less
+to encoded quantized color and brightness information about a block. The less
 space available to store each block's data the more highly distorted and
-pixelated the image becomes.
+pixelated the image becomes -- you can verify this by inspecting an image saved
+at quality 0 -- each 8x8 block of pixels should be assigned a single color.
 
 The change in pixel error rate is not directly related to the quality setting,
 again, an image's ultimate fate lies in its data; some images degrade rapidly
@@ -195,19 +199,27 @@ separately from the much larger population of "foreground" images.
 
 Implementation
 
-perl, imagemagick  perlmagick, etc.
-Runtime: 1-3 seconds per image; automatically scales to multiple CPUs via
-Imagemagick's built-in OpenMP support.
+The implementation for the standalone client and apache module is in C.
+The original script is in Perl.
+The interactive image gallery in web/ uses PHP.
+All use the excellent ImageMagick graphics library.
+
+
+Performance
+
+1-3 seconds for a typical image on a typical 2011 machine.
+Automatically scales to multiple CPUs via Imagemagick's built-in OpenMP support.
 
 
 Conclusion
 
-In conclusion I have created an automated method for determining optimal JPEG
-compression settings that can be integrated into existing workflows. The method
-is low cost to deploy and run and can yield appreciable and direct benefits in the form
-of improving webserver efficiency, reducing website latency, and most
-importantly improving overall viewer experience. This method is generally
-applicable and can be applied to any website containing JPEG images.
+In conclusion I have created an automated method for generating optimally-sized
+JPEG images for casual use that can be integrated into existing workflows.
+The method is low cost to deploy and run and can yield appreciable and direct
+benefits in the form of improving webserver efficiency, reducing website latency,
+and most importantly improving overall viewer experience.
+This method is generally applicable and can be applied to any collection of or
+website containing JPEG images.
 
 
 References
