@@ -8,6 +8,9 @@ $ make
 $ sudo make install
 $ imgmin original.jpg optimized.jpg
 
+On Ubuntu you might need:
+$ sudo apt-get install autoconf libmagickwand-dev
+
 Summary
 
     Image files constitute a majority of total web traffic.[17]
