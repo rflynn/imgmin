@@ -2,24 +2,23 @@ Get Started!
 
 $ git clone git@github.com:rflynn/imgmin.git
 $ cd imgmin
-$ git checkout -b autoconf origin/autoconf # temporarily needed for autoconf branch
 $ autoreconf -fi
 $ ./configure
 $ make
-# If you are missing any libraries see "Installation" at the bottom for "Prerequisites"
 $ sudo make install
 $ imgmin original.jpg optimized.jpg
 
 Summary
 
-    JPEG image files constitute a significant minority of total web
-    traffic. JPEGs are binary files that do not benefit from existing
-    standard (gzip) compression.
-    Imgmin applies established best practices and statistical means to
-    automatically optimize JPEG filesize for each unique image without
-    sacrificing quality, resulting in significant site-wide latency
-    reduction and bandwidth savings which improves user experience and
-    saves money.
+    Image files constitute a majority of total web traffic.[17]
+    Unlike text-based web file formats, binary image files do not benefit from
+    webserver-based HTTP gzip compression.
+    imgmin offers a standard interface for enforcing image quality as a
+    standalone tool and as a webserver module.
+    imgmin determines the optimal balance of image quality and filesize, often
+    greatly reducing image size while retaining quality for casual use, which
+    translates into more efficient use of storage and network bandwidth, which
+    saves money and improve user experience.
 
 
 The Problem
@@ -28,34 +27,25 @@ Websites are composed of several standard components.
     HTML describes overall page content and organization
     CSS describes specific page layout and style
     Javascript allows interactive client-side programming
-    XML is used for data exchange such as RSS feeds
+    XML and JSON are used for data exchange
     JPEG is a file format for photo-realistic images
 
 All but one of these component types are text-based. Text files can be
 automatically compressed by a webserver using gzip, which is supported by all
-major browsers.
+major webservers and browsers.
 
 Most web traffic consists of image file downloads, specifically JPEG images.
+JPEG files use so much bandwidth that Google has tried improving them by
+introducing an alternative format[16].
 JPEG images are not compressed by the webserver because JPEG is a binary format
 which does not compress well because it includes its own built-in compression,
 and generally it is up to the people creating the images to select an appropriate
-compression setting.  Compression and image quality are inversely proportional.
-The JPEG quality settings most used by graphics professional tend to be highly
-conservative, for several reasons.
+compression setting when the file is saved.  
 
-Firstly, JPEG is a "lossy" file format; once the quality/compression level has
-been applied to an image and saved, information can be lost. Visible quality
-errors (known as "artifacts") accumulate with repeated edits, so it is in
-graphical best interests to choose a very high quality setting in case a
-future edit is necessary.
-
-Secondly, graphics people tend to think of file sizes differently than backend
-web and network engineers. They are used to dealing with bitmapped files
-in the 100MBs range; a 100K JPEG file, at 1/10 of 1MB, does not seem large in
-comparison.
-
-Lastly, many graphics people tend to value their work and are generally
-hesitant to introduce any artifact, no matter how insignificant.
+The JPEG quality settings most used by graphics professionals tend to be highly
+conservative because Compression and image quality are inversely proportional
+and graphics people are interested in utmost visual quality and not in spending
+time worrying about network efficiency.
 
 The result of overly conservative JPEG compression and webservers' inability
 to compress them any further means that many images on the web are too large.
@@ -64,6 +54,9 @@ pages contain dozens of JPEG images.
 
 These bloated images take longer to transfer, leading to extended load time,
 which does not produce a good viewer experience. People hate to wait.
+
+In order to understand how to optimize JPEGs for size first we must learn more
+about the JPEG format.
 
 
 "Quality" Details
@@ -157,7 +150,7 @@ a human choose the lowest quality version of the image of acceptable quality.
 
 I proceded in this way for a variety of images, producing an interactive image
 gallery. Along with each image version I included several statistical measures
-available from the image processing library, and a pattern emerged.
+available from the image processing library and a pattern emerged.
 
 Given a high quality original image, apparent visual quality began to diminish
 noticably when mean pixel error rate exceeded 1.0.
@@ -165,9 +158,10 @@ noticably when mean pixel error rate exceeded 1.0.
 This metric measures the amount of change, on average, each pixel in the new
 image is from the original. Specifically, JPEGs break image data into 8x8 pixel
 blocks. The quality setting controls the amount of information available
-to encoded quantized color and brightness information about block. The less
+to encoded quantized color and brightness information about a block. The less
 space available to store each block's data the more highly distorted and
-pixelated the image becomes.
+pixelated the image becomes -- you can verify this by inspecting an image saved
+at quality 0 -- each 8x8 block of pixels should be assigned a single color.
 
 The change in pixel error rate is not directly related to the quality setting,
 again, an image's ultimate fate lies in its data; some images degrade rapidly
@@ -205,19 +199,27 @@ separately from the much larger population of "foreground" images.
 
 Implementation
 
-perl, imagemagick  perlmagick, etc.
-Runtime: 1-3 seconds per image; automatically scales to multiple CPUs via
-Imagemagick's built-in OpenMP support.
+The implementation for the standalone client and apache module is in C.
+The original script is in Perl.
+The interactive image gallery in web/ uses PHP.
+All use the excellent ImageMagick graphics library.
+
+
+Performance
+
+1-3 seconds for a typical image on a typical 2011 machine.
+Automatically scales to multiple CPUs via Imagemagick's built-in OpenMP support.
 
 
 Conclusion
 
-In conclusion I have created an automated method for determining optimal JPEG
-compression settings that can be integrated into existing workflows. The method
-is low cost to deploy and run and can yield appreciable and direct benefits in the form
-of improving webserver efficiency, reducing website latency, and most
-importantly improving overall viewer experience. This method is generally
-applicable and can be applied to any website containing JPEG images.
+In conclusion I have created an automated method for generating optimally-sized
+JPEG images for casual use that can be integrated into existing workflows.
+The method is low cost to deploy and run and can yield appreciable and direct
+benefits in the form of improving webserver efficiency, reducing website latency,
+and most importantly improving overall viewer experience.
+This method is generally applicable and can be applied to any collection of or
+website containing JPEG images.
 
 
 References
@@ -252,6 +254,10 @@ References
      <http://www.ampsoft.net/webdesign-l/jpeg-compression.html>
   15. "JPEG: Joint Photographic Experts Group"
      <http://www.cs.auckland.ac.nz/compsci708s1c/lectures/jpeg_mpeg/jpeg.html>
+  16. "WebP: A new image format for the Web", Google, 2012. Web. 31 Jan 2012.
+     <http://code.google.com/speed/webp/>
+  17 "New WebP Image Format Could Send JPEG Packing", Rob Spiegel, 10 Oct 2010. Web. 31 Jan 2012
+     <http://www.technewsworld.com/story/New-WebP-Image-Format-Could-Send-JPEG-Packing-70945.html>
 
 Technical Notes
 ----------------
@@ -273,7 +279,7 @@ Installation
 
     On Unix via source:
     $ cd /usr/local/src                                                # source directory of choice
-    $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick-6.7.1-3.tar.gz
+    $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick.tar.gz
     $ sudo gzip -dc ImageMagick-6.7.1-3.tar.gz | sudo tar xvf -        # extract
     $ cd ImageMagick-6.7.1-3                                           # change dir
     $ sudo ./configure                                                 # configure
@@ -290,13 +296,13 @@ Installation
 
 Example use
 
-$ ./imgmin.pl examples/afghan-girl.jpg examples/afghan-girl-after.jpg
+$ imgmin examples/afghan-girl.jpg examples/afghan-girl-after.jpg
 Before quality:85 colors:44958 size: 58.8KB type:TrueColor 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
 After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
 
 # on a single-core Intel Xeon server
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+$ time imgmin examples/lena1.jpg examples/lena1-after.jpg
 Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
 After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
 
@@ -306,7 +312,7 @@ sys     0m0.941s
 
 # on my dual-core laptop
 
-$ time ./imgmin.pl examples/lena1.jpg examples/lena1-after.jpg
+$ time imgmin examples/lena1.jpg examples/lena1-after.jpg
 Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
 After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
 

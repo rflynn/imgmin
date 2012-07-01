@@ -5,9 +5,9 @@
 bin_PROGRAMS = mod_imgmin_la
 mod_imgmin_la_SOURCES = mod_imgmin.c ../imgmin.c
 
-mod_imgmin_la:
+mod_imgmin_la: $(mod_imgmin_la_SOURCES)
 	if [ "$(APXS)" != "" ]; then \
-		$(APXS) -I `pwd`/.. `$(MAGICK_CONFIG) --cppflags --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -Wc,-W -Wc,-Wall -Wc,-Wno-unused-parameter -c mod_imgmin.c -c ../imgmin.c; \
+		$(APXS) -I `pwd`/.. `$(MAGICK_CONFIG) --cppflags --ldflags --libs|xargs` -Wc,-DIMGMIN_LIB -Wc,-W -Wc,-Wall -Wc,-Wno-unused-parameter -c $(mod_imgmin_la_SOURCES); \
 	fi
 
 install-exec-local: mod_imgmin_la

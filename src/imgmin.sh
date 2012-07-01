@@ -43,15 +43,67 @@ function unique_colors
 	return $colors
 }
 
+function do_png
+{
+	src=$1
+	tmpfile=$2
+	pngs=("$src") # always include existing file
+	# look for PNG-optimizing programs and run them and save their output filenames
+	# in the array $pngs
+	if [ $(which pngnq) ]; then
+		outfile="${tmpfile::$((${#tmpfile}-4))}-nq8${tmpfile:(-4)}"
+		pngnq "$tmpfile"
+		pngs[${#pngs[@]}]="$outfile"
+	fi
+	if [ $(which pngquant) ]; then
+		pngquant 256 "$tmpfile"
+		outfile="${tmpfile::$((${#tmpfile}-4))}-fs8${tmpfile:$((${#tmpfile}-4))}"
+		pngs[${#pngs[@]}]="$outfile"
+	fi
+	#if [ $(which optipng) ]; then
+		#outfile="${tmpfile::$((${#tmpfile}-4))}-optipng${tmpfile:$((${#tmpfile}-4))}"
+		#optipng -out "$outfile" "$src"
+		#pngs[${#pngs[@]}]="$outfile"
+	#fi
+	#if [ $(which pngcrush) ]; then
+		#outfile="${tmpfile::$((${#tmpfile}-4))}-pngcrush${tmpfile:$((${#tmpfile}-4))}"
+		#cp "$src" "$outfile"
+		#pngcrush "$outfile"
+		#pngs[${#pngs[@]}]="$outfile"
+	#fi
+	# search $pngs for the smallest file and return it
+	smalli=0
+	smallbytes=$(stat -c%s "${pngs[0]}")
+	curri=1
+	while [ $curri -lt ${#pngs[@]} ]
+	do
+		currbytes=$(stat -c%s "${pngs[$curri]}")
+		if [ $currbytes -lt $smallbytes ]; then
+			let smalli=curri
+		else
+			rm -f "${pngs[$curri]}"
+		fi
+		let curri=curri+1
+	done
+	echo "${pngs[$smalli]}"
+}
+
 function search_quality
 {
 	src=$1
-	tmpfile=$1
+	tmpfile=$2
 	uc=`unique_colors "$src"`
 	echo "uc=$uc"
 	if [ $((uc < MIN_UNIQUE_COLORS)) ]; then
 		#return
 		echo "$uc < $MIN_UNIQUE_COLORS"
+		if [ ".png" = ${src:(-4)} ]; then
+			cp "$src" "$tmpfile"
+			use=$(do_png "$src" "$tmpfile")
+			echo "use:$use"
+			cp "$use" "$tmpfile"
+			return
+		fi
 	fi
 	qmin=0
 	qmax=100
@@ -88,10 +140,11 @@ color_cnt=`unique_colors $src`
 pixel_count=$((`convert "$src" -format "%w*%h" info:-`))
 original_density=$((color_cnt / pixel_count))
 
-tmpfile=/tmp/imgmin$$.jpg
-search_quality $src $tmpfile
-convert -strip $tmpfile $dst
+ext=${src:(-3)}
+tmpfile="/tmp/imgmin$$.$ext"
+search_quality "$src" "$tmpfile"
+convert -strip "$tmpfile" "$dst"
 kdiff=print_stats
-cp $tmpfile $dst
+cp "$tmpfile" "$dst"
 #rm -f $tmpfile
 
