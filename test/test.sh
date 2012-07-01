@@ -21,6 +21,7 @@ for before in $(find ../examples | grep -E "\.(png|jpg)" | grep -v -- "-after")
 do
     echo "test $before " | tr -d '\n'
     after="after-"$(basename "$before")
+    rm -f "$after" 2>/dev/null #clear previous output
     out=$($IMGMIN "$before" "$after" 2>&1)
     beforesize=$(filesize "$before")
     aftersize=$(filesize "$after")
