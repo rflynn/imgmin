@@ -1,8 +1,9 @@
 /* ex: set ts=4 et: */
 /*
- * Copyright 2011 Ryan Flynn <parseerror@gmail.com>
+ * Copyright 2011-2012 Ryan Flynn <parseerror@gmail.com>
  *
- * This program is designed to optimize image file size.
+ * This program is designed to reduce image file size while preserving approximate
+ * visual quality.
  *
  * Specifically, to intelligently perform transformations that reduce file size
  * while preserving visible image quality for casual human use (i.e. web page
