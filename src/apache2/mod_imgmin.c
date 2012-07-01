@@ -75,7 +75,7 @@ static const char *imgmin_set_cache_dir(cmd_parms *cmd,
     if (strlen(arg) >= sizeof c->cache_dir)
     {
         fprintf(stderr, "Cache Dir length > %lu! '%s'\n",
-            sizeof c->cache_dir, arg);
+            (unsigned long)sizeof c->cache_dir, arg);
     } else {
         strcpy(c->cache_dir, arg);
     }
