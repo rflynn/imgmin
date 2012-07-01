@@ -450,46 +450,55 @@ void imgmin_opt_set_error_threshold(
 
 #ifndef IMGMIN_LIB
 
-static void doit(const char *src, const char *dst, size_t oldsize,
-                 const struct imgmin_options *opt)
+static unsigned char *load_blob(const char *src, size_t *size)
 {
-    MagickWand *mw, *tmp;
-    MagickBooleanType status;
-    double ks;
-    size_t newsize = oldsize + 1;
-
-    MagickWandGenesis();
-    mw = NewMagickWand();
-
+    unsigned char *blob = 0;
     /* load image... */
     if (0 == strcmp("-", src))
     {
         /* ...from stdin */
         # define BIGBUF (16 * 1024 * 1024)
-        char *blob = malloc(BIGBUF);
-        oldsize = read(STDIN_FILENO, blob, BIGBUF);
-        if (BIGBUF == oldsize)
+        blob = malloc(BIGBUF);
+        *size = read(STDIN_FILENO, blob, BIGBUF);
+        if (BIGBUF == *size)
         {
             fprintf(stderr, "Image too large for hardcoded imgmin stdin buffer\n");
             exit(1);
         }
-        MagickReadImageBlob(mw, blob, oldsize);
-        free(blob);
     } else {
         /* ...from disk */
-        status = MagickReadImage(mw, src);
-        if (status == MagickFalse)
-            ThrowWandException(mw);
+        struct stat st;
+        st.st_size = 0;
+        int fd = open(src, O_RDONLY);
+        fstat(fd, &st);
+        blob = malloc(st.st_size);
+        *size = read(fd, blob, st.st_size);
+        close(fd);
     }
+    return blob;
+}
+
+static void doit(const char *src, const char *dst, size_t oldsize,
+                 const struct imgmin_options *opt)
+{
+    MagickWand *mw, *tmp;
+    double ks;
+    size_t newsize = oldsize + 1;
+    unsigned char *blob_old = 0;
+
+    MagickWandGenesis();
+    mw = NewMagickWand();
+
+    blob_old = load_blob(src, &oldsize);
+    MagickReadImageBlob(mw, blob_old, oldsize);
  
     ks = oldsize / 1024.;
-
     fprintf(stdout,
         "Before quality:%lu colors:%lu size:%5.1fkB type:%s format:%s ",
         quality(mw),
         (unsigned long)unique_colors(mw),
         ks, type2str(MagickGetImageType(mw)),
-	MagickGetImageFormat(mw));
+	    MagickGetImageFormat(mw));
 
 #ifdef IMGMIN_STANDALONE
 /*
@@ -509,13 +518,16 @@ static void doit(const char *src, const char *dst, size_t oldsize,
 
     /* output image... */
     {
-        unsigned char *blob = MagickGetImageBlob(tmp, &newsize);
+        unsigned char *blob_new = MagickGetImageBlob(tmp, &newsize);
 
         /* if resulting image is larger than original, use original instead */
         if (newsize > oldsize)
         {
-            (void) MagickRelinquishMemory(blob);
-            blob = MagickGetImageBlob(mw, &newsize);
+            printf("newsize=%zu oldsize=%zu\n", newsize, oldsize);
+            (void) MagickRelinquishMemory(blob_new);
+            blob_new = blob_old;
+            newsize = oldsize;
+            printf("newsize=%zu oldsize=%zu\n", newsize, oldsize);
         }
 
         {
@@ -531,12 +543,13 @@ static void doit(const char *src, const char *dst, size_t oldsize,
                     exit(1);
                 }
             }
-            if ((ssize_t)newsize != write(fd, blob, newsize))
+            if ((ssize_t)newsize != write(fd, blob_new, newsize))
             {
                 perror("write");
                 exit(1);
             }
-            (void) MagickRelinquishMemory(blob);
+            if (blob_new != blob_old)
+                (void) MagickRelinquishMemory(blob_new);
             if (fd != STDOUT_FILENO)
                 close(fd);
         }
