@@ -1,9 +1,28 @@
 
+# vim
+.*.swp
+
 # autotools crap
 autom4te.cache
 autoscan.log
+aclocal.m4
+configure
+config.h
+config.h.in
+config.status
+config.log
+Makefile
+Makefile.in
+depcomp
+install-sh
 
 # intermediate build stuff
 *.lo
 *.slo
+*.o
+.deps
+.libs
+
+# final build
+*.la
 
