@@ -450,7 +450,7 @@ void imgmin_opt_set_error_threshold(
 
 #ifndef IMGMIN_LIB
 
-static unsigned char *load_blob(const char *src, size_t *size)
+static unsigned char *blob_read(const char *src, size_t *size)
 {
     unsigned char *blob = 0;
     /* load image... */
@@ -478,27 +478,87 @@ static unsigned char *load_blob(const char *src, size_t *size)
     return blob;
 }
 
-static void doit(const char *src, const char *dst, size_t oldsize,
-                 const struct imgmin_options *opt)
+static size_t blob_write(
+        unsigned char *blob_in, size_t size_in,
+        MagickWand *mw_out, const char *dst)
 {
-    MagickWand *mw, *tmp;
-    double ks;
-    size_t newsize = oldsize + 1;
-    unsigned char *blob_old = 0;
+    /* output image... */
+    size_t size_out = (size_t)-1;
+    unsigned char *blob_out = MagickGetImageBlob(mw_out, &size_out);
 
-    MagickWandGenesis();
-    mw = NewMagickWand();
+    if (size_out > size_in)
+    {
+        /* results worse than original, output original input */
+        (void) MagickRelinquishMemory(blob_out);
+        blob_out = blob_in;
+        size_out = size_in;
+    }
 
-    blob_old = load_blob(src, &oldsize);
-    MagickReadImageBlob(mw, blob_old, oldsize);
- 
-    ks = oldsize / 1024.;
+    {
+        int fd;
+        if (0 == strcmp("-", dst))
+        {
+            fd = STDOUT_FILENO;
+        } else {
+            fd = open(dst, O_WRONLY | O_CREAT, 0644);
+            if (-1 == fd)
+            {
+                perror("open");
+                exit(1);
+            }
+        }
+        if ((ssize_t)size_out != write(fd, blob_out, size_out))
+        {
+            perror("write");
+            exit(1);
+        }
+        if (blob_out != blob_in)
+            (void) MagickRelinquishMemory(blob_out);
+        if (fd != STDOUT_FILENO)
+            close(fd);
+    }
+    return size_out;
+}
+
+static void report_before(MagickWand *mw, size_t size_in)
+{
+    const double ks = size_in / 1024.;
     fprintf(stdout,
         "Before quality:%lu colors:%lu size:%5.1fkB type:%s format:%s ",
         quality(mw),
         (unsigned long)unique_colors(mw),
         ks, type2str(MagickGetImageType(mw)),
 	    MagickGetImageFormat(mw));
+}
+
+static void report_after(MagickWand *mw, size_t size_in, size_t size_out)
+{
+    const double ks = size_in / 1024.;
+    const double kd = size_out / 1024.;
+    const double ksave = ks - kd;
+    const double kpct = ksave * 100. / ks;
+
+    fprintf(stdout,
+        "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
+        (unsigned long)quality(mw),
+        (unsigned long)unique_colors(mw),
+        kd, ksave, kpct);
+}
+
+static void doit(const char *src, const char *dst, size_t size_in,
+                 const struct imgmin_options *opt)
+{
+    MagickWand *mw, *tmp;
+    size_t size_out = size_in + 1;
+    unsigned char *blob_in = 0;
+
+    blob_in = blob_read(src, &size_in);
+
+    MagickWandGenesis();
+    mw = NewMagickWand();
+    MagickReadImageBlob(mw, blob_in, size_in);
+
+    report_before(mw, size_in);
 
 #ifdef IMGMIN_STANDALONE
 /*
@@ -516,56 +576,9 @@ static void doit(const char *src, const char *dst, size_t oldsize,
     }
 #endif
 
-    /* output image... */
-    {
-        unsigned char *blob_new = MagickGetImageBlob(tmp, &newsize);
+    size_out = blob_write(blob_in, size_in, tmp, dst);
 
-        /* if resulting image is larger than original, use original instead */
-        if (newsize > oldsize)
-        {
-            printf("newsize=%zu oldsize=%zu\n", newsize, oldsize);
-            (void) MagickRelinquishMemory(blob_new);
-            blob_new = blob_old;
-            newsize = oldsize;
-            printf("newsize=%zu oldsize=%zu\n", newsize, oldsize);
-        }
-
-        {
-            int fd;
-            if (0 == strcmp("-", dst))
-            {
-                fd = STDOUT_FILENO;
-            } else {
-                fd = open(dst, O_WRONLY | O_CREAT, 0644);
-                if (-1 == fd)
-                {
-                    perror("open");
-                    exit(1);
-                }
-            }
-            if ((ssize_t)newsize != write(fd, blob_new, newsize))
-            {
-                perror("write");
-                exit(1);
-            }
-            if (blob_new != blob_old)
-                (void) MagickRelinquishMemory(blob_new);
-            if (fd != STDOUT_FILENO)
-                close(fd);
-        }
-    }
-
-    {
-        double kd = newsize / 1024.;
-        double ksave = ks - kd;
-        double kpct = ksave * 100. / ks;
-
-        fprintf(stdout,
-            "After  quality:%lu colors:%lu size:%5.1fkB saved:%5.1fkB (%.1f%%)\n",
-            (unsigned long)quality(tmp),
-            (unsigned long)unique_colors(tmp),
-            kd, ksave, kpct);
-    }
+    report_after(tmp, size_in, size_out);
 
     /* tear it down */
     DestroyMagickWand(tmp);
