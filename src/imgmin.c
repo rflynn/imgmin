@@ -359,21 +359,21 @@ static void do_png(MagickWand *mw, const char *src, const char *dst,
 
     /* if we find other well-known png optimizers, try them and record their results in files[] */
 
-    if (!system("which pngnq 2>&1 >/dev/null"))
+    if (!system("which pngnq 2>/dev/null >/dev/null"))
     {
         char * const argv[] = { "pngnq", "-f", src, NULL };
         snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
         filecnt += do_png_cmd2("pngnq", argv, out, files + filecnt);
     }
 
-    if (!system("which pngcrush 2>&1 >/dev/null"))
+    if (!system("which pngcrush 2>/dev/null >/dev/null"))
     {
         char * const argv[] = { "pngcrush", "-force", src, out, NULL };
         snprintf(out, sizeof out, "%.*s-pngcrush%s", srcnamelen, src, srcext);
         filecnt += do_png_cmd2("pngcrush", argv, out, files + filecnt);
     }
 
-    if (!system("which pngquant 2>&1 >/dev/null"))
+    if (!system("which pngquant 2>/dev/null >/dev/null"))
     {
         char * const argv[] = { "pngquant", "-force", "256", src, NULL };
         snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
