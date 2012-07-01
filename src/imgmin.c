@@ -136,14 +136,14 @@ static const char * type2str(const ImageType t)
            t == ColorSeparationType      ? "ColorSeparation"      :
            t == ColorSeparationMatteType ? "ColorSeparationMatte" :
            t == OptimizeType             ? "Optimize"             :
-#if MagickLibVersion <= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
+#if MagickLibVersion >= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
            t == PaletteBilevelMatteType  ? "PaletteBilevelMatte"  :
 #endif
            "???";
 }
 #endif
 
-#if MagickLibVersion <= 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
+#if MagickLibVersion < 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
 static ImageType MagickGetType(MagickWand *wand)
 {
     return UndefinedType;
