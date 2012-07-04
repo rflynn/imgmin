@@ -1,3 +1,6 @@
+<?php
+setlocale(LC_CTYPE, "UTF8", "en_US.UTF-8") or die("skip setlocale() failed\n");
+?>
 <html>
 <head>
 <style type="text/css">
@@ -45,10 +48,10 @@ function url(id)
  *	pngnq http://pngnq.sourceforge.net/
  */
 
-define('THUMBSIZE', 100);
+define('THUMBSIZE', 64);
 define('TEMPDIR', './tmp/');
 define('TEMPABS', realpath('.') . '/' . TEMPDIR);
-define('IMGMINPATH', file_exists('./imgmin.pl') ? './' : '../src/');
+define('IMGMINCMD', '../src/imgmin');
 
 $which = trim(`which convert`);
 if ($which)
@@ -84,7 +87,7 @@ function displayThumb($orig)
 $('#thumbs').html($('#thumbs').html() +
 '<div style="display:table; min-width:<?= THUMBSIZE+130 ?>px; margin-bottom:1px; white-space:nowrap">' +
 '	<div id="row<?= $i ?>" class="row" style="display:table-row">' +
-'		<div class="c linkdiv" style="width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= $res->path ?>\')"><img src="<?= $res->thumbpath ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
+'		<div class="c linkdiv" style="width:<?= THUMBSIZE ?>px"><a href="javascript:showThumb(\'row<?= $i ?>\', \'<?= utf8_decode($res->path) ?>\')"><img src="<?= utf8_decode($res->thumbpath) ?>" height="<?= $orig->thumbheight ?>" width="<?= $orig->thumbwidth ?>" style="border-width:1px"></a></div>' +
 '		<div style="display:table-cell; text-align:left; vertical-align:top; padding:2px; border-top:1px solid #ccc">' +
 '			<b><?= $target_diff ?><span style="color:#999;font-size:110%;font-family:times new roman" href="http://en.wikipedia.org/wiki/Standard_deviation">&sigma;</span></b><br>' +
 '			<div style="display:inline-block; margin-right:3px; width:<?= $pct ?>px; height:10px; background-image:url(static/img/progress-bar.png)"></div><?= $pct ?>%<br>' +
@@ -96,7 +99,7 @@ $('#thumbs').html($('#thumbs').html() +
 <?php
 		$i++;
 	}
-	printf("showThumb('row0', '%s')", $show[0]->path);
+	printf("showThumb('row0', '%s')", utf8_decode($show[0]->path));
 }
 
 function safedir($dir)
@@ -170,7 +173,7 @@ foreach ($classify as $c)
 		if ($DIR != 'images')
 			$link .= 'dir='.urlencode($DIR);
 ?>
-		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a id="<?= $id ?>" href="<?= $link ?>" onclick="javacript:url('<?= $id ?>');"><img src="<?= $img->thumbpath ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border:<?= $img->path == $IMG ? '3px solid #ff9' : '1px solid #999' ?>; padding:0px; margin:0px"></a></div>
+		<div style="display:inline-block; padding:0px; margin:0px; margin-right:1px; margin-bottom:1px"><a id="<?= $id ?>" href="<?= $link ?>" onclick="javacript:url('<?= $id ?>');"><img src="<?= utf8_decode($img->thumbpath) ?>" width="<?= $img->thumbwidth ?>" height="<?= $img->thumbheight ?>" style="border:<?= $img->path == $IMG ? '3px solid #ff9' : '1px solid #999' ?>; padding:0px; margin:0px"></a></div>
 <?php
 	}
 ?>
@@ -192,13 +195,13 @@ ob_flush();
 		<div id="resampled" class="c">
 			<div style="position:absolute; padding:3px; z-index:2"><h3 style="font-size:small; color:#fff; text-shadow: -1px -1px #333, 1px 1px #000">Resampled</h3></div>
 			<div style="background-image:url(static/img/bg.png)">
-				<img id="newoldbg" src="<?= htmlentities($old->path) ?>" style="position:absolute; z-index:0" width="<?= $old->width ?>" height="<?= $old->height ?>">
+				<img id="newoldbg" src="<?= utf8_decode($old->path) ?>" style="position:absolute; z-index:0" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				<img id="newimg" src="" width="<?= $old->width ?>" height="<?= $old->height ?>" style="z-index:1">
 			</div>
 			<div>
 				<div style="position:absolute; padding:3px; z-index:2"><h3 style="font-size:small; color:#fff; text-shadow: -1px -1px #333, 1px 1px #000">Original</h3></div>
 				<div style="background-image:url(static/img/bg.png)" >
-					<img id="oldimg" src="<?= htmlentities($old->path) ?>" width="<?= $old->width ?>" height="<?= $old->height ?>">
+					<img id="oldimg" src="<?= utf8_decode($old->path) ?>" width="<?= $old->width ?>" height="<?= $old->height ?>">
 				</div>
 			</div>
 		</div>

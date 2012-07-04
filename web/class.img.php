@@ -73,7 +73,8 @@ class Img
 			$newpath = sprintf('%s%s.%4.2f.%s', $this->tmpdir, basename($this->path), $pct, $this->ext);
 			if (!file_exists($newpath))
 			{
-				$cmd = sprintf('%simgmin.pl %s %s', IMGMINPATH, escapeshellarg($this->path), escapeshellarg($newpath));
+                $cmd = sprintf('%s %s %s', IMGMINCMD,
+                        escapeshellarg($this->path), escapeshellarg($newpath));
 				#echo "<pre>$cmd</pre>";
 				exec($cmd, &$out);
 				#echo '<pre>'.print_r($out,1).'</pre>';
