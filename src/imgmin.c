@@ -151,6 +151,25 @@ static ImageType MagickGetType(MagickWand *wand)
 }
 #endif
 
+
+static int enough_colors(MagickWand *mw, const struct imgmin_options *opt)
+{
+    return
+        unique_colors(mw) >= opt->min_unique_colors ||
+        /*
+         * most color photos end up as the TrueColor type...
+         * for Grayscale we ignore color count...
+         * haven't run into many of the other types yet, be aggressive for now
+         */
+        MagickGetType(mw) != TrueColorType ||
+        /*
+         * if a full-color JPEGs has exactly 256 colors it's likely
+         * been (poorly) converted from a GIF or PNG, these often look
+         * terrible anyway but can often be compressed quite a bit
+         */
+        unique_colors(mw) == 256;
+}
+
 /*
  * given a source image, a destination filepath and a set of image metadata thresholds,
  * search for the lowest-quality version of the source image whose properties fall within our
@@ -179,7 +198,7 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
      * The overwhelming majority of JPEGs are TrueColorType; it is those types, with a low
      * unique color count, that we must avoid.
      */
-    if (unique_colors(mw) < opt->min_unique_colors && MagickGetType(mw) != GrayscaleType)
+    if (!enough_colors(mw, opt))
     {
         fprintf(stdout, " Color count is too low, skipping...\n");
         return CloneMagickWand(mw);
