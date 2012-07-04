@@ -111,8 +111,9 @@ function list_images($dir, $nth=null)
 	$files = array();
 	$d = opendir($dir);
 	while (($f = readdir($d)))
-		if (preg_match('/\.(jpe?g|gif|png)$/i', $f))
-			$files[] = "$dir/$f";
+        if (preg_match('/\.(jpe?g|gif|png)$/i', $f))
+            if (!strstr($f, "-after."))
+			    $files[] = "$dir/$f";
 	closedir($d);
 	if ($nth !== null)
 		return $files[$nth];
