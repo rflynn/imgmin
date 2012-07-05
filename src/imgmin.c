@@ -46,7 +46,12 @@
  * the amount of mean pixel change we're willing to accept.
  * conservative=0.5 safe=0.75 sweetspot=1.00 toohigh=1.25
  */
-#define ERROR_THRESHOLD            1.00
+#define ERROR_THRESHOLD                 1.00
+#define ERROR_THRESHOLD_CONSERVATIVE    0.75
+#define ERROR_THRESHOLD_SAFE            0.50
+
+#define xstr(s) str(s)
+#define str(s) #s
 
 /*
  * secondary check that prevents the total number of colors from changing
@@ -605,6 +610,20 @@ static void doit(const char *src, const char *dst, size_t size_in,
     MagickWandTerminus();
 }
 
+static void help(void)
+{
+    printf(
+        " --error-threshold 1.0\n"
+        " --conservative\n"
+        " --very-conservative\n"
+        " --color-density-ratio ?\n"
+        " --min-unique-colors N\n"
+        " --quality-out-max [50-95]\n"
+        " --quality-out-min [50-90]\n"
+        " --quality-in-min [50-82]\n"
+        " --max-steps [5-7]\n"
+    );
+}
 
 static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
 {
@@ -612,8 +631,11 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
 
     imgmin_options_init(opt);
 
-    while (i + 1 < argc)
+    while (i < argc)
     {
+        /* if it isn't a cmdline option, we're done */
+        if (0 != strncmp("--", argv[i], 2))
+            break;
         /* GNU-style separator to support files with -- prefix
          * example for a file named "--baz": ./foo --bar -- --baz
          */
@@ -622,13 +644,16 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
             i += 1;
             break;
         }
-        /* if it isn't a cmdline option, we're done */
-        if (0 != strncmp("--", argv[i], 2))
-            break;
         /* test for each specific flag */
         if (0 == strcmp("--error-threshold", argv[i])) {
             imgmin_opt_set_error_threshold(opt, argv[i+1]);
             i += 2;
+        } else if (0 == strcmp("--conservative", argv[i])) {
+            imgmin_opt_set_error_threshold(opt, xstr(ERROR_THRESHOLD_CONSERVATIVE));
+            i++;
+        } else if (0 == strcmp("--very-conservative", argv[i])) {
+            imgmin_opt_set_error_threshold(opt, xstr(ERROR_THRESHOLD_SAFE));
+            i++;
         } else if (0 == strcmp("--color-density-ratio", argv[i])) {
             opt->color_density_ratio = strtod(argv[i+1], NULL);
             i += 2;
@@ -651,6 +676,9 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
             opt->max_steps = (unsigned)atoi(argv[i+1]);
             opt->max_steps = min(7, opt->max_steps);
             i += 2;
+        } else if (0 == strcmp("--help", argv[i])) {
+            help();
+            exit(0);
         } else {
             fprintf(stderr, "Unknown parameter '%s'\n", argv[i]);
             exit(1);
@@ -658,19 +686,6 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
     }
     return i;
 
-}
-
-static void help(void)
-{
-	printf(
-    	" --error-threshold 1.0\n"
-    	" --color-density-ratio ?\n"
-    	" --min-unique-colors N\n"
-    	" --quality-out-max N\n"
-    	" --quality-out-min N\n"
-    	" --quality-in-min N\n"
-    	" --max-steps N\n"
-	);
 }
 
 int main(int argc, char *argv[])
