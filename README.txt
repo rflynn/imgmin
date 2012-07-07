@@ -1,5 +1,6 @@
 Get Started!
 
+$ sudo apt-get install autoconf libmagickwand-dev pngnq pngcrush pngquant
 $ git clone git@github.com:rflynn/imgmin.git
 $ cd imgmin
 $ autoreconf -fi
@@ -7,9 +8,6 @@ $ ./configure
 $ make
 $ sudo make install
 $ imgmin original.jpg optimized.jpg
-
-On Ubuntu you might need:
-$ sudo apt-get install autoconf libmagickwand-dev
 
 Summary
 
@@ -23,19 +21,14 @@ Summary
     translates into more efficient use of storage and network bandwidth, which
     saves money and improve user experience.
 
-
 The Problem
 
 Websites are composed of several standard components.
-    HTML describes overall page content and organization
-    CSS describes specific page layout and style
-    Javascript allows interactive client-side programming
-    XML and JSON are used for data exchange
-    JPEG is a file format for photo-realistic images
-
-All but one of these component types are text-based. Text files can be
-automatically compressed by a webserver using gzip, which is supported by all
-major webservers and browsers.
+Most (HTML, CSS, Javascript, JSON, XML, etc) are text-based.
+They can be efficiently compressed for transfer via gzip, supported by all
+mainstream webservers and browsers.
+But image and video files are binary, non-text files, and generally are not
+worth auto-compressing in the webserver.
 
 Most web traffic consists of image file downloads, specifically JPEG images.
 JPEG files use so much bandwidth that Google has tried improving them by
