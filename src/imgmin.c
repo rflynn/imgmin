@@ -386,21 +386,21 @@ static void do_png(MagickWand *mw, const char *src, const char *dst,
 
     if (!system("which pngnq 2>/dev/null >/dev/null"))
     {
-        char * const argv[] = { "pngnq", "-f", src, NULL };
+        char * const argv[] = { "pngnq", "-f", src, (char*)0};
         snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
         filecnt += do_png_cmd2("pngnq", argv, out, files + filecnt);
     }
 
     if (!system("which pngcrush 2>/dev/null >/dev/null"))
     {
-        char * const argv[] = { "pngcrush", "-force", src, out, NULL };
+        char * const argv[] = { "pngcrush", "-force", src, out, (char*)0 };
         snprintf(out, sizeof out, "%.*s-pngcrush%s", srcnamelen, src, srcext);
         filecnt += do_png_cmd2("pngcrush", argv, out, files + filecnt);
     }
 
     if (!system("which pngquant 2>/dev/null >/dev/null"))
     {
-        char * const argv[] = { "pngquant", "-force", "256", src, NULL };
+        char * const argv[] = { "pngquant", "-force", "256", src, (char*)0 };
         snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
         filecnt += do_png_cmd2("pngquant", argv, out, files + filecnt);
     }
