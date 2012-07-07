@@ -355,7 +355,7 @@ static int do_png_cmd2(const char *cmd, char * const argv[], const char *outpath
             strcpy(fs->tool, cmd);
             strcpy(fs->path, outpath);
             fs->bytes = getfilesize(outpath);
-            ok = 1;
+            ok = (fs->bytes != (off_t)-1);
         }
     }
     return ok;
