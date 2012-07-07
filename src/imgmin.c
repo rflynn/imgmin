@@ -387,7 +387,10 @@ static void do_png(MagickWand *mw, const char *src, const char *dst,
     if (!system("which pngnq 2>/dev/null >/dev/null"))
     {
         char * const argv[] = { "pngnq", "-f", src, (char*)0};
-        snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
+        if (!strcmp(srcext, ".png"))
+            snprintf(out, sizeof out, "%.*s-nq8%s", srcnamelen, src, srcext);
+        else /* does not recognize non-".png" extension... */
+            snprintf(out, sizeof out, "%s-nq8.png", src);
         filecnt += do_png_cmd2("pngnq", argv, out, files + filecnt);
     }
 
@@ -401,7 +404,10 @@ static void do_png(MagickWand *mw, const char *src, const char *dst,
     if (!system("which pngquant 2>/dev/null >/dev/null"))
     {
         char * const argv[] = { "pngquant", "-force", "256", src, (char*)0 };
-        snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
+        if (!strcmp(srcext, ".png"))
+            snprintf(out, sizeof out, "%.*s-fs8%s", srcnamelen, src, srcext);
+        else /* does not recognize non-".png" extension... */
+            snprintf(out, sizeof out, "%s-fs8.png", src);
         filecnt += do_png_cmd2("pngquant", argv, out, files + filecnt);
     }
 
