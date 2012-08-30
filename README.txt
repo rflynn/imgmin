@@ -13,13 +13,13 @@ Summary
 
     Image files constitute a majority of total web traffic.[17]
     Unlike text-based web file formats, binary image files do not benefit from
-    webserver-based HTTP gzip compression.
-    imgmin offers a standard interface for enforcing image quality as a
+    built-in webserver-based HTTP gzip compression.
+    imgmin offers an automated means for enforcing image quality as a
     standalone tool and as a webserver module.
     imgmin determines the optimal balance of image quality and filesize, often
     greatly reducing image size while retaining quality for casual use, which
     translates into more efficient use of storage and network bandwidth, which
-    saves money and improve user experience.
+    saves money and improves user experience.
 
 The Problem
 
@@ -76,7 +76,7 @@ Here is a chart of the approximate relationship between the visual effect of
  100% |#*******
   90% | #      ******* Visual Quality (approximate)
   80% |  #            ********
-  70% |   #                   ********
+  70% |   #                   ********    --- noticeably worse at some point ---
   60% |    ##                         *******
   50% |      ###                             ******
   40% |         #####                              ****
@@ -97,11 +97,6 @@ at quality 75, but are half as large than they would be at quality 95. As
 quality drops below 75 there are larger apparent visual changes and reduced
 savings in filesize.
 
-The ability to reduce an images' size by 50% means that for many images the
-potential exists to transmit them to viewers *twice as fast*, resulting in
-significant reduction in latency and overall load time, leading to a better
-viewer experience.
-
 
 Even More Detail
 
@@ -117,6 +112,7 @@ Wikipedia images:          80
 Windows live background:   82
 Twitter user JPEG images:  30-100, apparently not enforcing quality
 
+This is a fine strategy and is low-risk, straight-forward and inexpensive.
 
 But for optimal results it is not that simple. Compression results rely heavily
 on the data being compressed. This means that visual quality is not uniform for
@@ -155,8 +151,8 @@ This metric measures the amount of change, on average, each pixel in the new
 image is from the original. Specifically, JPEGs break image data into 8x8 pixel
 blocks. The quality setting controls the amount of information available
 to encoded quantized color and brightness information about a block. The less
-space available to store each block's data the more highly distorted and
-pixelated the image becomes -- you can verify this by inspecting an image saved
+space available to store each block's data the more distorted and pixelated
+the image becomes -- you can verify this by inspecting an image saved
 at quality 0 -- each 8x8 block of pixels should be assigned a single color.
 
 The change in pixel error rate is not directly related to the quality setting,
