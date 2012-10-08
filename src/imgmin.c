@@ -530,7 +530,7 @@ static size_t blob_write(
         {
             fd = STDOUT_FILENO;
         } else {
-            fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            fd = creat(dst, 0644);
             if (-1 == fd)
             {
                 perror("open");
