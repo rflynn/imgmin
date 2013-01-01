@@ -681,6 +681,7 @@ static int parse_opts(int argc, char * const argv[], struct imgmin_options *opt)
         } else if (0 == strcmp("--max-steps", argv[i])) {
             opt->max_steps = (unsigned)atoi(argv[i+1]);
             opt->max_steps = min(7, opt->max_steps);
+            opt->max_steps = max(2, opt->max_steps);
             i += 2;
         } else if (0 == strcmp("--help", argv[i])) {
             help();
