@@ -619,15 +619,15 @@ static void doit(const char *src, const char *dst, size_t size_in,
 static void help(void)
 {
     printf(
-        " --error-threshold 1.0\n"
-        " --conservative\n"
-        " --very-conservative\n"
-        " --color-density-ratio ?\n"
-        " --min-unique-colors N\n"
-        " --quality-out-max [50-95]\n"
-        " --quality-out-min [50-90]\n"
-        " --quality-in-min [50-82]\n"
-        " --max-steps [5-7]\n"
+        " --error-threshold N      Set amount of mean pixel change acceptable - Default 1.0\n"
+        " --conservative           Sets the error threshold to 0.75\n"
+        " --very-conservative      Sets the error threshold to 0.5\n"
+        " --color-density-ratio N  Set percentage of color count change allowed - Default 0.11\n"
+        " --min-unique-colors N    Leave images with less colors than this untouched - Default 4096\n"
+        " --quality-out-max N      Maximum quality level for output - Default 95\n"
+        " --quality-out-min N      Minimum quality level for output - Default 70\n"
+        " --quality-in-min N       Leave images with lower quality than this untouched - Default 82\n"
+        " --max-steps N            Perform a maximum of this amount of steps - Default 5\n"
     );
 }
 
