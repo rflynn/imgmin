@@ -11,7 +11,7 @@ $ imgmin original.jpg optimized.jpg
 
 Summary
 
-    Image files constitute a majority of total web traffic.[17]
+    Image files constitute a majority of static web traffic.[17]
     Unlike text-based web file formats, binary image files do not benefit from
     built-in webserver-based HTTP gzip compression.
     imgmin offers an automated means for enforcing image quality as a
