@@ -159,14 +159,14 @@ noticably when mean pixel error rate exceeded 1.0.
 This metric measures the amount of change, on average, each pixel in the new
 image is from the original. Specifically, JPEGs break image data into 8x8 pixel
 blocks. The quality setting controls the amount of information available
-to encoded quantized color and brightness information about a block. The less
+to encode quantized color and brightness information about a block. The less
 space available to store each block's data the more distorted and pixelated
 the image becomes -- you can verify this by inspecting an image saved
 at quality 0 -- each 8x8 block of pixels should be assigned a single color.
 
 The change in pixel error rate is not directly related to the quality setting,
 again, an image's ultimate fate lies in its data; some images degrade rapidly
-within a 1 or 2 quality steps, while others compress with little visible
+within 1 or 2 quality steps, while others compress with little visible
 difference from quality 95 to quality 50.
 
 
