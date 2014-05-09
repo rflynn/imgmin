@@ -5,7 +5,7 @@ imgmin
 Get Started!
 ------------
     $ sudo apt-get install autoconf libmagickwand-dev pngnq pngcrush pngquant
-    $ git clone git@github.com:rflynn/imgmin.git
+    $ git clone https://github.com/rflynn/imgmin.git
     $ cd imgmin
     $ autoreconf -fi
     $ ./configure
