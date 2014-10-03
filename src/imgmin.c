@@ -27,6 +27,7 @@
 #include <float.h> /* DBL_EPSILON */
 #include <wand/MagickWand.h>
 #include "imgmin.h"
+#include "dssim.h"
 
 #ifndef IMGMIN_LIB /* not the Apache mopdule... (we assume cmdline) */
 #define IMGMIN_STANDALONE
@@ -178,6 +179,36 @@ static int enough_colors(MagickWand *mw, const struct imgmin_options *opt)
         unique_colors(mw) == 256;
 }
 
+/**
+ * Prepares reading of given MagickWand by convert_row_callback.
+ * Returns "user_data" arg for the callback.
+ */
+void *convert_row_start(MagickWand *mw) {
+    return NewPixelIterator(mw);
+}
+
+void convert_row_finish(void *user_data) {
+    DestroyPixelIterator((PixelIterator*)user_data);
+}
+
+/**
+ * Converts a single row from MagickWand iterator into luma channel needed by DSSIM
+ */
+void convert_row_callback(const dssim_info *const inf, float *const channels[], const int num_channels, const int y, const int orig_width, void *user_data) {
+    size_t x, width = orig_width;
+    PixelWand **pmw = PixelGetNextIteratorRow((PixelIterator*)user_data, &width);
+
+    for(x = 0; x < width; x++) {
+        // Ideally it should be reading luma directly from JPEG
+        // Only one channel (luma) is written for speed/simplicity sake.
+        channels[0][x] = (
+            .2126 * PixelGetRed(pmw[x]) + // I'm assuming IM gives perceptually uniform values
+            .7152 * PixelGetGreen(pmw[x]) +
+            .0722 * PixelGetBlue(pmw[x])
+        ) * PixelGetAlpha(pmw[x]);
+    }
+}
+
 /*
  * given a source image, a destination filepath and a set of image metadata thresholds,
  * search for the lowest-quality version of the source image whose properties fall within our
@@ -218,6 +249,15 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
         return CloneMagickWand(mw);
     }
 
+    size_t width = MagickGetImageWidth(mw);
+    size_t height = MagickGetImageHeight(mw);
+
+    dssim_info *dssim = dssim_init(1);
+
+    void *convert_data = convert_row_start(mw);
+    dssim_set_original_float_callback(dssim, width, height, convert_row_callback, convert_data);
+    convert_row_finish(convert_data);
+
     {
         ExceptionInfo *exception = AcquireExceptionInfo();
 
@@ -232,8 +272,6 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
          */
         while (qmax > qmin + 1 && steps < opt->max_steps)
         {
-            double distortion[CompositeChannels+1];
-            double error;
             double density_ratio;
             unsigned q;
 
@@ -250,25 +288,12 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             tmp = NewMagickWand();
             MagickReadImage(tmp, tmpfile);
 
-            /* quantify distortion produced by quality change
-             * NOTE: writes to distortion[], which we don't care about
-             * and to image(tmp)->error, which we do care about
-             */
-            (void) GetImageDistortion(GetImageFromMagickWand(tmp),
-                                      GetImageFromMagickWand(mw),
-#if MagickLibVersion < 0x630 /* FIXME: available in 0x660, not available in 0x628, not sure which version it was introduced in */
-                                      MeanAbsoluteErrorMetric,
-#else
-                                      MeanErrorPerPixelMetric,
-#endif
-                                      distortion,
-                                      exception);
-            /* FIXME: in perlmagick i was getting back a number [0,255.0],
-             * here something else is happening... the hardcoded divisor
-             * is an imperfect attempt to scale the number back to the
-             * perlmagick results. I really need to look into this.
-             */
-            error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
+            void *convert_data = convert_row_start(tmp);
+            dssim_set_modified_float_callback(dssim, width, height, convert_row_callback, convert_data);
+            convert_row_finish(convert_data);
+
+            double error = dssim_compare(dssim, NULL);
+
             density_ratio = fabs(color_density(tmp) - original_density) / original_density;
 
             /* color density ratio threshold is an alternative quality measure.
