@@ -130,7 +130,7 @@ static double color_density(MagickWand *mw)
 #ifndef IMGMIN_LIB
 static const char * type2str(const ImageType t)
 {
-    return 
+    return
            t == UndefinedType            ? "Undefined"            :
            t == BilevelType              ? "Bilevel"              :
            t == GrayscaleType            ? "Grayscale"            :
@@ -313,7 +313,7 @@ struct filesize
 {
     char tool[64];
     char path[MAX_PATH+1];
-    off_t bytes; 
+    off_t bytes;
 };
 
 static off_t getfilesize(const char *path)
