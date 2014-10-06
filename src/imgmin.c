@@ -267,9 +267,15 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
              */
             error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
             density_ratio = fabs(color_density(tmp) - original_density) / original_density;
-        
+
+            /* color density ratio threshold is an alternative quality measure.
+               If it's exceeded, pretend MSE was higher to increase quality */
+            if (density_ratio > opt->color_density_ratio) {
+                error *= 1.25 + density_ratio; // fudge factor
+            }
+
             /* eliminate half search space based on whether distortion within thresholds */
-            if (error > opt->error_threshold || density_ratio > opt->color_density_ratio)
+            if (error > opt->error_threshold)
             {
                 qmin = q;
             } else {
