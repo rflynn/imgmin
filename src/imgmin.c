@@ -292,7 +292,7 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             dssim_set_modified_float_callback(dssim, width, height, convert_row_callback, convert_data);
             convert_row_finish(convert_data);
 
-            double error = dssim_compare(dssim, NULL);
+            double error = 20.0 * dssim_compare(dssim, NULL); // scaled to threshold of previous implementation
 
             density_ratio = fabs(color_density(tmp) - original_density) / original_density;
 
