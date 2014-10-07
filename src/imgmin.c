@@ -73,8 +73,8 @@
  * override: --quality-out-max N
  *           --quality-out-min N
  */
-#define QUALITY_OUT_MAX           95
-#define QUALITY_OUT_MIN           70
+#define QUALITY_OUT_MAX           92
+#define QUALITY_OUT_MIN           60
 
 /*
  * if input image quality is already lower than this, assume it has been
