@@ -50,6 +50,9 @@
 #define ERROR_THRESHOLD_CONSERVATIVE    0.75
 #define ERROR_THRESHOLD_SAFE            0.50
 
+/* if error treshold is within +/-3% assume it's good enough */
+#define ERROR_THRESHOLD_INACCURACY      0.03
+
 #define xstr(s) str(s)
 #define str(s) #s
 
@@ -284,6 +287,12 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             if (opt->show_progress)
             {
                 fprintf(stdout, "%.2f/%.2f@%u ", error, density_ratio, q);
+            }
+
+            /* Stop searching if close enough to the target */
+            if (fabs(error - opt->error_threshold) < opt->error_threshold * ERROR_THRESHOLD_INACCURACY) {
+                qmax = q;
+                break;
             }
         }
         if (opt->show_progress)
