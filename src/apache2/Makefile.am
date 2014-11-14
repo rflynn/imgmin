@@ -3,7 +3,7 @@
 # Reference: http://httpd.apache.org/docs/2.2/programs/apxs.html
 
 bin_PROGRAMS = mod_imgmin_la
-mod_imgmin_la_SOURCES = mod_imgmin.c ../imgmin.c
+mod_imgmin_la_SOURCES = mod_imgmin.c ../imgmin.c ../dssim.c
 
 mod_imgmin_la: $(mod_imgmin_la_SOURCES)
 	if [ "$(APXS)" != "" ]; then \

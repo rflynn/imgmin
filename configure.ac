@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.59])
 AC_INIT([imgmin], [0.7], [https://github.com/rflynn/imgmin/issues])
-AC_CONFIG_SRCDIR([src/imgmin.c])
+AC_CONFIG_SRCDIR([src])
 
 AM_INIT_AUTOMAKE([imgmin], [0.7])
 
