@@ -8,13 +8,16 @@ autoscan.log
 aclocal.m4
 configure
 config.h
-config.h.in
+config.h.in*
 config.status
 config.log
 Makefile
 Makefile.in
 depcomp
 install-sh
+compile
+missing
+stamp-h1
 
 # intermediate build stuff
 *.lo

@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.59])
 AC_INIT([imgmin], [0.7], [https://github.com/rflynn/imgmin/issues])
-AC_CONFIG_SRCDIR([src/imgmin.c])
+AC_CONFIG_SRCDIR([src])
 
 AM_INIT_AUTOMAKE([imgmin], [0.7])
 
@@ -11,6 +11,7 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CC_STDC
 
 # Checks for libraries.
 # check for -lm
@@ -25,7 +26,7 @@ AC_CHECK_PROGS(MAGICK_CONFIG, MagickWand-config Magick-config, "")
 AC_CHECK_PROGS(APXS, apxs2 apxs, "")
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h float.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h float.h stdlib.h string.h unistd.h math.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
