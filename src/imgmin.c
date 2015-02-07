@@ -575,18 +575,12 @@ static void report_after(MagickWand *mw, size_t size_in, size_t size_out)
         kd, ksave, kpct);
 }
 
-static void doit(const char *src, const char *dst, size_t size_in,
-                 const struct imgmin_options *opt)
+static void optimize_image(MagickWand *mw, const char *src, const char *dst,
+                           size_t size_in, unsigned char *blob_in,
+                           const struct imgmin_options *opt)
 {
-    MagickWand *mw, *tmp;
+    MagickWand *tmp;
     size_t size_out = size_in + 1;
-    unsigned char *blob_in = 0;
-
-    blob_in = blob_read(src, &size_in);
-
-    MagickWandGenesis();
-    mw = NewMagickWand();
-    MagickReadImageBlob(mw, blob_in, size_in);
 
     report_before(mw, size_in);
 
@@ -607,11 +601,27 @@ static void doit(const char *src, const char *dst, size_t size_in,
 #endif
 
     size_out = blob_write(blob_in, size_in, tmp, dst);
-
     report_after(tmp, size_in, size_out);
+    DestroyMagickWand(tmp);
+}
+
+static void doit(const char *src, const char *dst, size_t size_in,
+                 const struct imgmin_options *opt)
+{
+    MagickWand *mw;
+    unsigned char *blob_in = 0;
+
+    blob_in = blob_read(src, &size_in);
+
+    MagickWandGenesis();
+    mw = NewMagickWand();
+
+    if (MagickReadImageBlob(mw, blob_in, size_in) == MagickTrue)
+    {
+        optimize_image(mw, src, dst, size_in, blob_in, opt);
+    }
 
     /* tear it down */
-    DestroyMagickWand(tmp);
     DestroyMagickWand(mw);
     MagickWandTerminus();
 }
