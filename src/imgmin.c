@@ -130,7 +130,7 @@ static double color_density(MagickWand *mw)
 #ifndef IMGMIN_LIB
 static const char * type2str(const ImageType t)
 {
-    return 
+    return
            t == UndefinedType            ? "Undefined"            :
            t == BilevelType              ? "Bilevel"              :
            t == GrayscaleType            ? "Grayscale"            :
@@ -267,9 +267,15 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
              */
             error = GetImageFromMagickWand(tmp)->error.mean_error_per_pixel / 380.;
             density_ratio = fabs(color_density(tmp) - original_density) / original_density;
-        
+
+            /* color density ratio threshold is an alternative quality measure.
+               If it's exceeded, pretend MSE was higher to increase quality */
+            if (density_ratio > opt->color_density_ratio) {
+                error *= 1.25 + density_ratio; // fudge factor
+            }
+
             /* eliminate half search space based on whether distortion within thresholds */
-            if (error > opt->error_threshold || density_ratio > opt->color_density_ratio)
+            if (error > opt->error_threshold)
             {
                 qmin = q;
             } else {
@@ -313,7 +319,7 @@ struct filesize
 {
     char tool[64];
     char path[MAX_PATH+1];
-    off_t bytes; 
+    off_t bytes;
 };
 
 static off_t getfilesize(const char *path)
