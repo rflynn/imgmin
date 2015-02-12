@@ -29,3 +29,6 @@ stamp-h1
 # final build
 *.la
 
+# OS X
+.DS_Store
+
