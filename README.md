@@ -4,14 +4,14 @@ imgmin
 
 Get Started!
 ------------
-    $ sudo apt-get install -y autoconf libmagickwand-dev pngnq pngcrush pngquant
-    $ git clone https://github.com/rflynn/imgmin.git
-    $ cd imgmin
-    $ autoreconf -fi
-    $ ./configure
-    $ make
-    $ sudo make install
-    $ imgmin original.jpg optimized.jpg
+    sudo apt-get install -y autoconf libmagickwand-dev pngnq pngcrush pngquant
+    git clone https://github.com/rflynn/imgmin.git
+    cd imgmin
+    autoreconf -fi
+    ./configure
+    make
+    sudo make install
+    imgmin original.jpg optimized.jpg
 
 
 Summary
@@ -296,10 +296,7 @@ On Unix via source:
 
 imgmin
 
-    $ git clone git@github.com:rflynn/imgmin.git
-    $ cd imgmin
-    $ make
-    $ sudo make install
+    from source: see top of README
 
 
 Examples
