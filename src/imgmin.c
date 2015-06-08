@@ -668,10 +668,11 @@ static void doit(const char *src, const char *dst, size_t size_in,
     MagickWandGenesis();
     mw = NewMagickWand();
 
-    if (MagickReadImageBlob(mw, blob_in, size_in) == MagickTrue)
-    {
-        optimize_image(mw, src, dst, size_in, blob_in, opt);
+    if (MagickReadImageBlob(mw, blob_in, size_in) != MagickTrue) {
+        ThrowWandException(mw);
     }
+
+    optimize_image(mw, src, dst, size_in, blob_in, opt);
 
     /* tear it down */
     DestroyMagickWand(mw);
