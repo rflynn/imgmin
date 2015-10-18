@@ -8,10 +8,21 @@ then
     exit 1
 fi
 
-filesize()
-{
-    echo $(du -b "$1" | cut -f1)
-}
+UNAME="$(uname)"
+case "$UNAME" in
+"Darwin")
+    filesize()
+    {
+        stat -f%z "$1"
+    }
+    ;;
+*)
+    filesize()
+    {
+        echo $(du -b "$1" | cut -f1)
+    }
+    ;;
+esac
 
 pct_less()
 {
