@@ -18,7 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#if !defined(_WIN32) && !defined(__CYGWIN__)
 #include <sys/wait.h>
+#endif
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -368,6 +370,7 @@ static off_t getfilesize(const char *path)
     return st.st_size;
 }
 
+#if !defined(_WIN32) && !defined(__CYGWIN__)
 /*
  * run 'cmd'; if it succeeds then store path and its filesize in fs
  */
@@ -486,6 +489,7 @@ static void do_png(MagickWand *mw, const char *src, const char *dst,
     }
 
 }
+#endif
 
 int imgmin_options_init(struct imgmin_options *opt)
 {
@@ -539,7 +543,11 @@ static unsigned char *blob_read(const char *src, size_t *size)
         /* ...from disk */
         struct stat st;
         st.st_size = 0;
+#if defined(_WIN32) || defined(__CYGWIN__)
+        int fd = open(src, O_RDONLY | O_BINARY);
+#else
         int fd = open(src, O_RDONLY);
+#endif
         fstat(fd, &st);
         blob = malloc(st.st_size);
         *size = read(fd, blob, st.st_size);
@@ -570,7 +578,11 @@ static size_t blob_write(
         {
             fd = STDOUT_FILENO;
         } else {
+#if defined(_WIN32) || defined(__CYGWIN__)
+            fd = open(dst, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0644);
+#else
             fd = creat(dst, 0644);
+#endif
             if (-1 == fd)
             {
                 perror("open");
@@ -624,7 +636,7 @@ static void optimize_image(MagickWand *mw, const char *src, const char *dst,
 
     report_before(mw, size_in);
 
-#ifdef IMGMIN_STANDALONE
+#if defined(IMGMIN_STANDALONE) && !defined(_WIN32) && !defined(__CYGWIN__)
 /*
  * NOTE: for now only allow use of external PNG tools in a standalone cmdline app,
  * not the built-in apache -- it's slower and less trustworthy.
@@ -636,7 +648,7 @@ static void optimize_image(MagickWand *mw, const char *src, const char *dst,
     } else {
 #endif
         tmp = search_quality(mw, dst, opt);
-#ifdef IMGMIN_STANDALONE
+#if defined(IMGMIN_STANDALONE) && !defined(_WIN32) && !defined(__CYGWIN__)
     }
 #endif
 
@@ -656,10 +668,11 @@ static void doit(const char *src, const char *dst, size_t size_in,
     MagickWandGenesis();
     mw = NewMagickWand();
 
-    if (MagickReadImageBlob(mw, blob_in, size_in) == MagickTrue)
-    {
-        optimize_image(mw, src, dst, size_in, blob_in, opt);
+    if (MagickReadImageBlob(mw, blob_in, size_in) != MagickTrue) {
+        ThrowWandException(mw);
     }
+
+    optimize_image(mw, src, dst, size_in, blob_in, opt);
 
     /* tear it down */
     DestroyMagickWand(mw);
