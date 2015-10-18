@@ -64,3 +64,12 @@ printf "After:  %5.0fk (%d%% saved)\n" \
     $(($totalafter/1024)) \
     $total_pct_saved
 
+# original results
+if [ ! -e results/2011-05-26.csv ]
+then
+    ls -l $(find ../examples -type f) | egrep -i '\.(jpg|gif|png)' | awk '{print $9","$5}' | grep -v -- '-after' | sed 's/^.*\///' | sort > results/2011-05-26.csv
+fi
+
+# save current results
+ls -l $(find . -type f) | egrep -i '\.(jpg|gif|png)' | awk '{print $9","$5}' | sed 's/.\/after-//' | sort > results/$(date +'%Y-%m-%d').csv
+
