@@ -27,9 +27,6 @@ translates into more efficient use of storage and network bandwidth, which
 saves money and improves user experience.
 
 
-*****
-
-
 The Problem
 -----------
 Websites are composed of several standard components.
@@ -134,7 +131,7 @@ So we are left with a question:
 **What is the optimal quality setting for a given image with regard to filesize
 but still remain indistinguishable from the original?**
 
-The widely accepted answer, as formulated by the 'JPEG image compression FAQ':
+The widely accepted answer, as formulated by the 'JPEG image compression FAQ'[5]:
 
 **This setting will vary from one image to another.**
 
@@ -208,7 +205,7 @@ All use the excellent ImageMagick graphics library.
 
 Performance
 -----------
-1-3 seconds for a typical image on a typical 2011 machine.
+0.5-2 seconds for a typical image on a typical 2015 machine.
 Automatically scales to multiple CPUs via Imagemagick's built-in OpenMP support.
 
 
@@ -305,33 +302,19 @@ imgmin
 Examples
 --------
 
-
 ### Generic
 
-    $ imgmin examples/afghan-girl.jpg examples/afghan-girl-after.jpg
-    Before quality:85 colors:44958 size: 58.8KB type:TrueColor 0.56/0.03@77 0.67/0.06@73 0.70/0.06@71
-    After  quality:70 colors:47836 size: 37.9KB saved:(20.9KB 35.5%)
+    $ time ./src/imgmin examples/Afghan-Girl-by-Steve-McCurry.jpg Afghan-Girl-by-Steve-McCurry-after.jpg
+    Before quality:85 colors:44904 size: 58.8kB type:TrueColor format:JPEG 0.27/0.06@72 0.36/0.08@66 0.42/0.10@63 0.44/0.06@61
+    After  quality:61 colors:51650 size: 29.6kB saved: 29.2kB (49.7%)
 
 
-### Single-core Intel Xeon server
-
-    $ time imgmin examples/lena1.jpg examples/lena1-after.jpg
-    Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
-    After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
-
-    real    0m1.467s
-    user    0m0.488s
-    sys     0m0.941s
-
-
-### My dual-core laptop
+### My 2014 Macbook
 
     $ time imgmin examples/lena1.jpg examples/lena1-after.jpg
-    Before quality:92 colors:69904 size: 89.7KB type:TrueColor 1.55/0.01@81 1.24/0.12@86 0.81/0.09@89 1.11/0.12@87
-    After  quality:88 colors:78327 size: 68.0KB saved:(21.7KB 24.2%)
+    Before quality:92 colors:73822 size: 89.7kB type:TrueColor format:JPEG 0.93/0.02@76 1.13/0.02@68 1.01/0.02@72
+    After  quality:72 colors:74073 size: 35.8kB saved: 53.8kB (60.0%)
 
-    real    0m0.931s
-    user    0m1.310s
-    sys     0m0.090s
-
-
+    real    0m0.696s
+    user    0m0.590s
+    sys     0m0.060s
