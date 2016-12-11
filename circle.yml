@@ -1,0 +1,12 @@
+machine:
+    pre:
+        - sudo apt-get install -y autoconf libmagickwand-dev pngnq pngcrush pngquant
+checkout:
+    post:
+        - autoreconf -fi
+        - ./configure
+        - make
+        - sudo make install
+test:
+    override:
+        - imgmin examples/lena1.jpg lena1-imgmin.jpg && [[ $(stat -c%s lena1-imgmin.jpg) -le $(stat -c%s examples/lena1.jpg) ]]
