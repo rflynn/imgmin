@@ -24,7 +24,7 @@ fi
 # needed for webservers
 PATH=$PATH:/usr/local/bin:/usr/bin # FIXME: be smarter
 
-CMP_THRESHOLD=0.90
+cmpthreshold=0.90
 COLOR_DENSITY_RATIO=0.95
 MIN_UNIQUE_COLORS=4096
 
@@ -40,7 +40,7 @@ function unique_colors
 {
 	src=$1
 	colors=`convert "$src" -format "%k" info:-`
-	return $colors
+	echo $colors
 }
 
 function do_png
@@ -94,7 +94,7 @@ function search_quality
 	tmpfile=$2
 	uc=`unique_colors "$src"`
 	echo "uc=$uc"
-	if [ $((uc < MIN_UNIQUE_COLORS)) ]; then
+	if [ $uc -lt $MIN_UNIQUE_COLORS ]; then
 		#return
 		echo "$uc < $MIN_UNIQUE_COLORS"
 		if [ ".png" = ${src:(-4)} ]; then
@@ -102,8 +102,8 @@ function search_quality
 			use=$(do_png "$src" "$tmpfile")
 			echo "use:$use"
 			cp "$use" "$tmpfile"
-			return
 		fi
+		return
 	fi
 	qmin=0
 	qmax=100
@@ -119,7 +119,7 @@ function search_quality
 		else
 			qmax=$q
 		fi
-		printf "%.2f@%u " $cmppct $q
+		LC_ALL=C printf "%.2f@%u " $cmppct $q
 	done
 }
 
