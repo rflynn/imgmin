@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.59])
-AC_INIT([imgmin], [0.7], [https://github.com/rflynn/imgmin/issues])
+AC_INIT([imgmin], [1.1], [https://github.com/rflynn/imgmin/issues])
 AC_CONFIG_SRCDIR([src])
 
-AM_INIT_AUTOMAKE([imgmin], [0.7])
+AM_INIT_AUTOMAKE([subdir-objects])
 
 AC_CONFIG_HEADERS([config.h])
 
