@@ -196,7 +196,7 @@ void convert_row_finish(void *user_data) {
 /**
  * Converts a single row from MagickWand iterator into luma channel needed by DSSIM
  */
-void convert_row_callback(const dssim_info *const inf, float *const channels[], const int num_channels, const int y, const int orig_width, void *user_data) {
+void convert_row_callback(float *const channels[], const int num_channels, const int y, const int orig_width, void *user_data) {
     size_t x, width = orig_width;
     PixelWand **pmw = PixelGetNextIteratorRow((PixelIterator*)user_data, &width);
 
@@ -254,10 +254,10 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
     size_t width = MagickGetImageWidth(mw);
     size_t height = MagickGetImageHeight(mw);
 
-    dssim_info *dssim = dssim_init(1);
+    dssim_attr *dssim = dssim_create_attr();
 
     void *convert_data = convert_row_start(mw);
-    dssim_set_original_float_callback(dssim, width, height, convert_row_callback, convert_data);
+    dssim_image *dssim_org = dssim_create_image_float_callback(dssim, 1, width, height, convert_row_callback, convert_data);
     convert_row_finish(convert_data);
 
     {
@@ -291,10 +291,13 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
             MagickReadImage(tmp, tmpfile);
 
             void *convert_data = convert_row_start(tmp);
-            dssim_set_modified_float_callback(dssim, width, height, convert_row_callback, convert_data);
+            dssim_image *dssim_mod = dssim_create_image_float_callback(dssim, 1, width, height, convert_row_callback, convert_data);
             convert_row_finish(convert_data);
 
-            double error = 20.0 * dssim_compare(dssim, NULL); // scaled to threshold of previous implementation
+            double error = 90.0 * dssim_compare(dssim, dssim_org, dssim_mod); // scaled to threshold of previous implementation
+
+            dssim_dealloc_image(dssim_mod);
+            dssim_mod = NULL;
 
             density_ratio = fabs(color_density(tmp) - original_density) / original_density;
 
@@ -347,6 +350,10 @@ MagickWand * search_quality(MagickWand *mw, const char *dst,
 
         exception = DestroyExceptionInfo(exception);
     }
+
+    dssim_dealloc_image(dssim_org);
+
+    dssim_dealloc_attr(dssim);
 
     return tmp;
 }
