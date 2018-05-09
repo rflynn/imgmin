@@ -13,6 +13,7 @@ Get Started!
     sudo make install
     imgmin original.jpg optimized.jpg
 
+Note: if you have ImageMagick errors, install ImageMagick from source following directions in prerequisites section below, run tests as documented on source page (https://www.imagemagick.org/script/install-source.php) , and restart clone step above from scratch.
 
 Summary
 -------
@@ -285,8 +286,8 @@ On Unix via source:
     
     $ cd /usr/local/src                                                # source directory of choice
     $ sudo wget -nH -nd ftp://ftp.imagemagick.org/pub/ImageMagick/ImageMagick.tar.gz
-    $ sudo gzip -dc ImageMagick-6.7.1-3.tar.gz | sudo tar xvf -        # extract
-    $ cd ImageMagick-6.7.1-3                                           # change dir
+    $ sudo gzip -dc ImageMagick.tar.gz | sudo tar xvf -                # extract
+    $ cd ImageMagick-<version>                                         # change dir
     $ sudo ./configure                                                 # configure
     $ sudo make -j2                                                    # compile
     $ sudo make install                                                # install
